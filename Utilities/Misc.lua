@@ -66,7 +66,7 @@ end
 
 function Misc:ReJoin()
     if #PlayerService:GetPlayers() <= 1 then
-        LocalPlayer:Kick("\nMatr1xHub\nRejoining...")
+        LocalPlayer:Kick("\nMatr1x Hub\nRejoining...")
         task.wait(0.5)
         TeleportService:Teleport(game.PlaceId)
     else
