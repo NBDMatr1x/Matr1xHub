@@ -303,13 +303,13 @@ for Index,Instance in pairs(Workspace.WORKSPACE_Geometry:GetChildren()) do
 end
 for Index,Instance in pairs(Workspace.WORKSPACE_Entities.Animals:GetChildren()) do
     if Instance.Health.Value > 300 then
-        print(Instance.Name)
+        --print(Instance.Name)
         Matr1x.Utilities.Drawing:AddESP(Instance,"Model","ESP/Legendary",Window.Flags)
     end
 end
 Workspace.WORKSPACE_Entities.Animals.ChildAdded:Connect(function(Instance)
     if Instance:WaitForChild("Health").Value > 300 then
-        print(Instance.Name)
+        --print(Instance.Name)
         Matr1x.Utilities.Drawing:AddESP(Instance,"Model","ESP/Legendary",Window.Flags)
     end
 end)
@@ -319,37 +319,37 @@ end)
 for Index,Instance in pairs(Regions) do
     for Index,Instance in pairs(Instance.Trees:GetChildren()) do
         if Instance:FindFirstChild("Strike2",true) then
-            print(Instance.Name)
+            --print(Instance.Name)
             Matr1x.Utilities.Drawing:AddESP(Instance,"Model","ESP/Thunderstruck",Window.Flags)
         end
     end
     for Index,Instance in pairs(Instance.Vegetation:GetChildren()) do
         if Instance:FindFirstChild("Strike2",true) then
-            print(Instance.Name)
+            --print(Instance.Name)
             Matr1x.Utilities.Drawing:AddESP(Instance,"Model","ESP/Thunderstruck",Window.Flags)
         end
     end
     Instance.Trees.DescendantAdded:Connect(function(Instance)
         if Instance:IsA("ParticleEmitter") and Instance.Name == "Strike2" then
-            print(Instance.Parent.Parent.Name)
+            --print(Instance.Parent.Parent.Name)
             Matr1x.Utilities.Drawing:AddESP(Instance.Parent.Parent,"Model","ESP/Thunderstruck",Window.Flags)
         end
     end)
     Instance.Trees.DescendantRemoving:Connect(function(Instance)
         if Instance:IsA("ParticleEmitter") and Instance.Name == "Strike2" then
-            print(Instance.Parent.Parent.Name)
+            --print(Instance.Parent.Parent.Name)
             Matr1x.Utilities.Drawing:RemoveESP(Instance.Parent.Parent)
         end
     end)
     Instance.Vegetation.DescendantAdded:Connect(function()
         if Instance:IsA("ParticleEmitter") and Instance.Name == "Strike2" then
-            print(Instance.Parent.Parent.Name)
+            --print(Instance.Parent.Parent.Name)
             Matr1x.Utilities.Drawing:AddESP(Instance.Parent.Parent,"Model","ESP/Thunderstruck",Window.Flags)
         end
     end)
     Instance.Trees.DescendantRemoving:Connect(function(Instance)
         if Instance:IsA("ParticleEmitter") and Instance.Name == "Strike2" then
-            print(Instance.Parent.Parent.Name)
+            --print(Instance.Parent.Parent.Name)
             Matr1x.Utilities.Drawing:RemoveESP(Instance.Parent.Parent)
         end
     end)
