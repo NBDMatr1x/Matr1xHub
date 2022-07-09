@@ -44,7 +44,7 @@ function Misc:SetupFPS()
     end
 end
 
-function Misc:HideObject(Object,Parent)
+function Misc:HideObject(Object)
     if gethui then Object.Parent = gethui() return end
     if syn and syn.protect_gui then
         syn.protect_gui(Object)
@@ -105,7 +105,7 @@ function Misc:JoinDiscord()
             ["cmd"] = "INVITE_BROWSER",
             ["nonce"] = string.lower(HttpService:GenerateGUID(false)),
             ["args"] = {
-                ["code"] = "QzsyYz7cZP"
+                ["code"] = "sYqDpbPYb7"
             }
         })
     })
@@ -136,7 +136,7 @@ function Misc:SetupLighting(Flags) local OldNewIndex
         if LightingProperty ~= Matr1x.Utilities.UI:TableToColor(Flags["Lighting/"..Property])
         and Lighting[Property] ~= Misc.DefaultLighting[Property] then
             Misc.DefaultLighting[Property] = Lighting[Property]
-            print(Property,Lighting[Property])
+            --print(Property,Lighting[Property])
         end
     end) end)
     
