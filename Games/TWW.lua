@@ -207,6 +207,7 @@ local Window = Matr1x.Utilities.UI:Window({
             CreditsSection:Label({Text = "Thanks to Blissful for Offscreen Arrows"})
             CreditsSection:Label({Text = "Thanks to coasts for Universal ESP"})
             CreditsSection:Label({Text = "Thanks to el3tric for Bracket V2"})
+            CreditsSection:Label({Text = "❤️ ❤️ ❤️ ❤️"})
         end
     end
 end
