@@ -203,6 +203,7 @@ local Window = Matr1x.Utilities.UI:Window({
         local CreditsSection = SettingsTab:Section({Name = "Credits",Side = "Right"}) do
             CreditsSection:Label({Text = "This script was made by Matr1x#5430"})
             CreditsSection:Divider()
+            CreditsSection:Label({Text = "Thanks to Jan for awesome Background Patterns"})
             CreditsSection:Label({Text = "Thanks to Infinite Yield Team for Server Hop and Rejoin"})
             CreditsSection:Label({Text = "Thanks to Blissful for Offscreen Arrows"})
             CreditsSection:Label({Text = "Thanks to coasts for Universal ESP"})
