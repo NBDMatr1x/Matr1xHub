@@ -7,6 +7,7 @@ local CoreGui = game:GetService("CoreGui")
 
 local Debug,LocalPlayer = false,PlayerService.LocalPlayer
 local MainAssetFolder = Debug and game.ReplicatedStorage["BracketV3.2"]
+or InsertService:LoadLocalAsset("rbxassetid://9153139105")
 
 local function GetAsset(AssetPath)
     AssetPath = AssetPath:split("/")
@@ -115,28 +116,28 @@ local function ChooseTabSide(TabAsset,Mode)
 end
 
 local function GetConfigs()
-    if not isfolder("Matr1xHub") then makefolder("Matr1xHub") end
-    if not isfolder("Matr1xHub\\Configs") then makefolder("Matr1xHub\\Configs") end
-    if not isfile("Matr1xHub\\DefaultConfig.txt") then writefile("Matr1xHub\\DefaultConfig.txt","") end
+    if not isfolder("Matr1x") then makefolder("Matr1x") end
+    if not isfolder("Matr1x\\Configs") then makefolder("Matr1x\\Configs") end
+    if not isfile("Matr1x\\DefaultConfig.txt") then writefile("Matr1x\\DefaultConfig.txt","") end
 
     local Configs = {}
-    for Index,File in pairs(listfiles("Matr1xHub\\Configs") or {}) do
-        File = File:gsub("Matr1xHub\\Configs\\","")
+    for Index,File in pairs(listfiles("Matr1x\\Configs") or {}) do
+        File = File:gsub("Matr1x\\Configs\\","")
         File = File:gsub(".json","")
         Configs[Index] = File
     end
     return Configs
 end
 local function ConfigsToList()
-    if not isfolder("Matr1xHub") then makefolder("Matr1xHub") end
-    if not isfolder("Matr1xHub\\Configs") then makefolder("Matr1xHub\\Configs") end
-    if not isfile("Matr1xHub\\DefaultConfig.txt") then writefile("Matr1xHub\\DefaultConfig.txt","") end
+    if not isfolder("Matr1x") then makefolder("Matr1x") end
+    if not isfolder("Matr1x\\Configs") then makefolder("Matr1x\\Configs") end
+    if not isfile("Matr1x\\DefaultConfig.txt") then writefile("Matr1x\\DefaultConfig.txt","") end
     
     local Configs = {}
-    for Index,File in pairs(listfiles("Matr1xHub\\Configs") or {}) do
-        File = File:gsub("Matr1xHub\\Configs\\","")
+    for Index,File in pairs(listfiles("Matr1x\\Configs") or {}) do
+        File = File:gsub("Matr1x\\Configs\\","")
         File = File:gsub(".json","")
-        local DefaultConfig = readfile("Matr1xHub\\DefaultConfig.txt")
+        local DefaultConfig = readfile("Matr1x\\DefaultConfig.txt")
         Configs[Index] = {Name = File,Mode = "Button",
             Value = File == DefaultConfig}
     end
@@ -302,18 +303,18 @@ local function InitWindow(ScreenAsset,Window)
     function Window:SaveConfig(Name)
         local Config = {}
         if table.find(GetConfigs(),Name) then
-            Config = HttpService:JSONDecode(readfile("Matr1xHub\\Configs\\"..Name..".json"))
+            Config = HttpService:JSONDecode(readfile("Matr1x\\Configs\\"..Name..".json"))
         end
         for Index,Element in pairs(Window.Elements) do
             if not Element.IgnoreFlag then
                 Config[Element.Flag] = Window.Flags[Element.Flag]
             end
         end
-        writefile("Matr1xHub\\Configs\\"..Name..".json",HttpService:JSONEncode(Config))
+        writefile("Matr1x\\Configs\\"..Name..".json",HttpService:JSONEncode(Config))
     end
     function Window:LoadConfig(Name)
         if table.find(GetConfigs(),Name) then
-            local DecodedJSON = HttpService:JSONDecode(readfile("Matr1xHub\\Configs\\"..Name..".json"))
+            local DecodedJSON = HttpService:JSONDecode(readfile("Matr1x\\Configs\\"..Name..".json"))
             for Index,Element in pairs(Window.Elements) do
                 if DecodedJSON[Element.Flag] ~= nil then
                     Element:SetValue(DecodedJSON[Element.Flag])
@@ -323,25 +324,25 @@ local function InitWindow(ScreenAsset,Window)
     end
     function Window:DeleteConfig(Name)
         if table.find(GetConfigs(),Name) then
-            delfile("Matr1xHub\\Configs\\"..Name..".json")
+            delfile("Matr1x\\Configs\\"..Name..".json")
         end
     end
     function Window:GetDefaultConfig()
-        if not isfolder("Matr1xHub") then makefolder("Matr1xHub") end
-        if not isfolder("Matr1xHub\\Configs") then makefolder("Matr1xHub\\Configs") end
-        if not isfile("Matr1xHub\\DefaultConfig.txt") then writefile("Matr1xHub\\DefaultConfig.txt","") end
+        if not isfolder("Matr1x") then makefolder("Matr1x") end
+        if not isfolder("Matr1x\\Configs") then makefolder("Matr1x\\Configs") end
+        if not isfile("Matr1x\\DefaultConfig.txt") then writefile("Matr1x\\DefaultConfig.txt","") end
 
-        local DefaultConfig = readfile("Matr1xHub\\DefaultConfig.txt")
+        local DefaultConfig = readfile("Matr1x\\DefaultConfig.txt")
         if table.find(GetConfigs(),DefaultConfig) then
             return DefaultConfig
         end
     end
     function Window:LoadDefaultConfig()
-        if not isfolder("Matr1xHub") then makefolder("Matr1xHub") end
-        if not isfolder("Matr1xHub\\Configs") then makefolder("Matr1xHub\\Configs") end
-        if not isfile("Matr1xHub\\DefaultConfig.txt") then writefile("Matr1xHub\\DefaultConfig.txt","") end
+        if not isfolder("Matr1x") then makefolder("Matr1x") end
+        if not isfolder("Matr1x\\Configs") then makefolder("Matr1x\\Configs") end
+        if not isfile("Matr1x\\DefaultConfig.txt") then writefile("Matr1x\\DefaultConfig.txt","") end
 
-        local DefaultConfig = readfile("Matr1xHub\\DefaultConfig.txt")
+        local DefaultConfig = readfile("Matr1x\\DefaultConfig.txt")
         if table.find(GetConfigs(),DefaultConfig) then
             Window:LoadConfig(DefaultConfig)
         end
@@ -1253,13 +1254,13 @@ function Bracket:Window(Window)
                 ConfigSection:Button({Name = "Set",Callback = function()
                     if ConfigDropdown.Value and ConfigDropdown.Value[1] then
                         DefaultConfig = ConfigDropdown.Value[1]
-                        writefile("Matr1xHub\\DefaultConfig.txt",DefaultConfig)
+                        writefile("Matr1x\\DefaultConfig.txt",DefaultConfig)
                         ConfigDivider:SetText(
                         "Default Config\n<font color=\"rgb(189,189,189)\">[ "..DefaultConfig.." ]</font>")
                     end
                 end})
                 ConfigSection:Button({Name = "Clear",Callback = function()
-                    writefile("Matr1xHub\\DefaultConfig.txt","")
+                    writefile("Matr1x\\DefaultConfig.txt","")
                     ConfigDivider:SetText("Default Config")
                 end})
             end
