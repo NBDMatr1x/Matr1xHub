@@ -116,28 +116,28 @@ local function ChooseTabSide(TabAsset,Mode)
 end
 
 local function GetConfigs()
-    if not isfolder("Matr1x") then makefolder("Matr1x") end
-    if not isfolder("Matr1x\\Configs") then makefolder("Matr1x\\Configs") end
-    if not isfile("Matr1x\\DefaultConfig.txt") then writefile("Matr1x\\DefaultConfig.txt","") end
+    if not isfolder("Matr1xHub") then makefolder("Matr1xHub") end
+    if not isfolder("Matr1xHub\\Configs") then makefolder("Matr1xHub\\Configs") end
+    if not isfile("Matr1xHub\\DefaultConfig.txt") then writefile("Matr1xHub\\DefaultConfig.txt","") end
 
     local Configs = {}
-    for Index,File in pairs(listfiles("Matr1x\\Configs") or {}) do
-        File = File:gsub("Matr1x\\Configs\\","")
+    for Index,File in pairs(listfiles("Matr1xHub\\Configs") or {}) do
+        File = File:gsub("Matr1xHub\\Configs\\","")
         File = File:gsub(".json","")
         Configs[Index] = File
     end
     return Configs
 end
 local function ConfigsToList()
-    if not isfolder("Matr1x") then makefolder("Matr1x") end
-    if not isfolder("Matr1x\\Configs") then makefolder("Matr1x\\Configs") end
-    if not isfile("Matr1x\\DefaultConfig.txt") then writefile("Matr1x\\DefaultConfig.txt","") end
+    if not isfolder("Matr1xHub") then makefolder("Matr1xHub") end
+    if not isfolder("Matr1xHub\\Configs") then makefolder("Matr1xHub\\Configs") end
+    if not isfile("Matr1xHub\\DefaultConfig.txt") then writefile("Matr1xHub\\DefaultConfig.txt","") end
     
     local Configs = {}
-    for Index,File in pairs(listfiles("Matr1x\\Configs") or {}) do
-        File = File:gsub("Matr1x\\Configs\\","")
+    for Index,File in pairs(listfiles("Matr1xHub\\Configs") or {}) do
+        File = File:gsub("Matr1xHub\\Configs\\","")
         File = File:gsub(".json","")
-        local DefaultConfig = readfile("Matr1x\\DefaultConfig.txt")
+        local DefaultConfig = readfile("Matr1xHub\\DefaultConfig.txt")
         Configs[Index] = {Name = File,Mode = "Button",
             Value = File == DefaultConfig}
     end
@@ -303,18 +303,18 @@ local function InitWindow(ScreenAsset,Window)
     function Window:SaveConfig(Name)
         local Config = {}
         if table.find(GetConfigs(),Name) then
-            Config = HttpService:JSONDecode(readfile("Matr1x\\Configs\\"..Name..".json"))
+            Config = HttpService:JSONDecode(readfile("Matr1xHub\\Configs\\"..Name..".json"))
         end
         for Index,Element in pairs(Window.Elements) do
             if not Element.IgnoreFlag then
                 Config[Element.Flag] = Window.Flags[Element.Flag]
             end
         end
-        writefile("Matr1x\\Configs\\"..Name..".json",HttpService:JSONEncode(Config))
+        writefile("Matr1xHub\\Configs\\"..Name..".json",HttpService:JSONEncode(Config))
     end
     function Window:LoadConfig(Name)
         if table.find(GetConfigs(),Name) then
-            local DecodedJSON = HttpService:JSONDecode(readfile("Matr1x\\Configs\\"..Name..".json"))
+            local DecodedJSON = HttpService:JSONDecode(readfile("Matr1xHub\\Configs\\"..Name..".json"))
             for Index,Element in pairs(Window.Elements) do
                 if DecodedJSON[Element.Flag] ~= nil then
                     Element:SetValue(DecodedJSON[Element.Flag])
@@ -324,25 +324,25 @@ local function InitWindow(ScreenAsset,Window)
     end
     function Window:DeleteConfig(Name)
         if table.find(GetConfigs(),Name) then
-            delfile("Matr1x\\Configs\\"..Name..".json")
+            delfile("Matr1xHub\\Configs\\"..Name..".json")
         end
     end
     function Window:GetDefaultConfig()
-        if not isfolder("Matr1x") then makefolder("Matr1x") end
-        if not isfolder("Matr1x\\Configs") then makefolder("Matr1x\\Configs") end
-        if not isfile("Matr1x\\DefaultConfig.txt") then writefile("Matr1x\\DefaultConfig.txt","") end
+        if not isfolder("Matr1xHub") then makefolder("Matr1xHub") end
+        if not isfolder("Matr1xHub\\Configs") then makefolder("Matr1xHub\\Configs") end
+        if not isfile("Matr1xHub\\DefaultConfig.txt") then writefile("Matr1xHub\\DefaultConfig.txt","") end
 
-        local DefaultConfig = readfile("Matr1x\\DefaultConfig.txt")
+        local DefaultConfig = readfile("Matr1xHub\\DefaultConfig.txt")
         if table.find(GetConfigs(),DefaultConfig) then
             return DefaultConfig
         end
     end
     function Window:LoadDefaultConfig()
-        if not isfolder("Matr1x") then makefolder("Matr1x") end
-        if not isfolder("Matr1x\\Configs") then makefolder("Matr1x\\Configs") end
-        if not isfile("Matr1x\\DefaultConfig.txt") then writefile("Matr1x\\DefaultConfig.txt","") end
+        if not isfolder("Matr1xHub") then makefolder("Matr1xHub") end
+        if not isfolder("Matr1xHub\\Configs") then makefolder("Matr1xHub\\Configs") end
+        if not isfile("Matr1xHub\\DefaultConfig.txt") then writefile("Matr1xHub\\DefaultConfig.txt","") end
 
-        local DefaultConfig = readfile("Matr1x\\DefaultConfig.txt")
+        local DefaultConfig = readfile("Matr1xHub\\DefaultConfig.txt")
         if table.find(GetConfigs(),DefaultConfig) then
             Window:LoadConfig(DefaultConfig)
         end
@@ -1032,25 +1032,28 @@ local function InitColorpicker(Parent,ScreenAsset,Window,Colorpicker)
     local AlphaRender = nil
 
     local function TableToColor(Table)
-        if typeof(Table) ~= "table" then return Table end
+        if type(Table) ~= "table" then return Table end
         return Color3.fromHSV(Table[1],Table[2],Table[3])
+    end
+    local function FormatToString(Color)
+        return math.round(Color.R * 255) .. "," .. math.round(Color.G * 255) .. "," .. math.round(Color.B * 255)
     end
 
     local function Update()
-        local Color = TableToColor(Colorpicker.Value)
-        ColorpickerAsset.Color.BackgroundColor3 = Color
+        Colorpicker.Value[6] = TableToColor(Colorpicker.Value)
+        ColorpickerAsset.Color.BackgroundColor3 = Colorpicker.Value[6]
         PaletteAsset.SVPicker.BackgroundColor3 = Color3.fromHSV(Colorpicker.Value[1],1,1)
         PaletteAsset.SVPicker.Pin.Position = UDim2.new(Colorpicker.Value[2],0,1 - Colorpicker.Value[3],0)
         PaletteAsset.Hue.Pin.Position = UDim2.new(1 - Colorpicker.Value[1],0,0.5,0)
 
         PaletteAsset.Alpha.Pin.Position = UDim2.new(Colorpicker.Value[4],0,0.5,0)
         PaletteAsset.Alpha.Value.Text = Colorpicker.Value[4]
-        PaletteAsset.Alpha.BackgroundColor3 = Color
+        PaletteAsset.Alpha.BackgroundColor3 = Colorpicker.Value[6]
 
-        PaletteAsset.RGB.RGBBox.PlaceholderText = math.round(Color.R * 255) .. "," .. math.round(Color.G * 255) .. "," .. math.round(Color.B * 255)
-        PaletteAsset.HEX.HEXBox.PlaceholderText = Color:ToHex()
+        PaletteAsset.RGB.RGBBox.PlaceholderText = FormatToString(Colorpicker.Value[6])
+        PaletteAsset.HEX.HEXBox.PlaceholderText = Colorpicker.Value[6]:ToHex()
         Window.Flags[Colorpicker.Flag] = Colorpicker.Value
-        Colorpicker.Callback(Colorpicker.Value,Color)
+        Colorpicker.Callback(Colorpicker.Value,Colorpicker.Value[6])
     end
     Update()
 
@@ -1163,11 +1166,11 @@ local function InitColorpicker(Parent,ScreenAsset,Window,Colorpicker)
                 Colorpicker.Value[1] = Window.RainbowHue
                 Update()
             else 
-                local Color = TableToColor(Colorpicker.Value)
                 Colorpicker.Value[1] = Window.RainbowHue
-                ColorpickerAsset.Color.BackgroundColor3 = Color
+                Colorpicker.Value[6] = TableToColor(Colorpicker.Value)
+                ColorpickerAsset.Color.BackgroundColor3 = Colorpicker.Value[6]
                 Window.Flags[Colorpicker.Flag] = Colorpicker.Value
-                Colorpicker.Callback(Colorpicker.Value,Color)
+                Colorpicker.Callback(Colorpicker.Value,Colorpicker.Value[6])
             end
         end
     end)
@@ -1254,13 +1257,13 @@ function Bracket:Window(Window)
                 ConfigSection:Button({Name = "Set",Callback = function()
                     if ConfigDropdown.Value and ConfigDropdown.Value[1] then
                         DefaultConfig = ConfigDropdown.Value[1]
-                        writefile("Matr1x\\DefaultConfig.txt",DefaultConfig)
+                        writefile("Matr1xHub\\DefaultConfig.txt",DefaultConfig)
                         ConfigDivider:SetText(
                         "Default Config\n<font color=\"rgb(189,189,189)\">[ "..DefaultConfig.." ]</font>")
                     end
                 end})
                 ConfigSection:Button({Name = "Clear",Callback = function()
-                    writefile("Matr1x\\DefaultConfig.txt","")
+                    writefile("Matr1xHub\\DefaultConfig.txt","")
                     ConfigDivider:SetText("Default Config")
                 end})
             end
@@ -1483,7 +1486,7 @@ function Bracket:Window(Window)
 end
 
 function Bracket:TableToColor(Table)
-    if typeof(Table) ~= "table" then return Table end
+    if type(Table) ~= "table" then return Table end
     return Color3.fromHSV(Table[1],Table[2],Table[3])
 end
 
