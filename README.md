@@ -5,6 +5,7 @@ Made By ***Matr1x#5430***
 loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/NBDMatr1x/Matr1xHub/main/Loader.lua"))()
 ```
 ### Supported Games
+- Apocalypse Rising 2
 - Bad Business
 - Blackhawk Rescue Mission 5
 - The Wild West
