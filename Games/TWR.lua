@@ -21,7 +21,7 @@ local OCIFunction for Index,Function in pairs(getgc()) do
 end if not OCIFunction then return end
 
 local Window = Matr1x.Utilities.UI:Window({
-    Name = "Matr1x Hub — "..Matr1x.Current,
+    Name = "Matr1x Hub — "..Matr1x.Game,
     Position = UDim2.new(0.05,0,0.5,-248)
     }) do Window:Watermark({Enabled = true})
 
@@ -29,7 +29,7 @@ local Window = Matr1x.Utilities.UI:Window({
         local MiscSection = AimAssistTab:Section({Name = "Misc",Side = "Left"}) do
             MiscSection:Toggle({Name = "Unlimited Ammo",Flag = "TWR/InfAmmo",Value = false})
             MiscSection:Toggle({Name = "Wallbang",Flag = "TWR/Wallbang",Value = false}):ToolTip("Silent Aim Required")
-            MiscSection:Toggle({Name = "No Bullet Drop",Flag = "TWR/NoBulletDrop",Value = false}):ToolTip("Silent Aim Required")
+            MiscSection:Toggle({Name = "Instant Hit",Flag = "TWR/NoBulletDrop",Value = false}):ToolTip("Silent Aim Required\nAlso Enables Wallbang")
         end
         local AimbotSection = AimAssistTab:Section({Name = "Aimbot",Side = "Left"}) do
             AimbotSection:Toggle({Name = "Enabled",Flag = "Aimbot/Enabled",Value = false})
@@ -65,7 +65,6 @@ local Window = Matr1x.Utilities.UI:Window({
             SilentAimSection:Toggle({Name = "Enabled",Flag = "SilentAim/Enabled",Value = false})
             :Keybind({Mouse = true,Flag = "SilentAim/Keybind"})
             SilentAimSection:Toggle({Name = "Visibility Check",Flag = "SilentAim/WallCheck",Value = false})
-            SilentAimSection:Toggle({Name = "Unlimited Ammo",Flag = "TWR/InfAmmo",Value = false})
             SilentAimSection:Toggle({Name = "Dynamic FOV",Flag = "SilentAim/DynamicFOV",Value = false})
             SilentAimSection:Slider({Name = "Hit Chance",Flag = "SilentAim/HitChance",Min = 0,Max = 100,Value = 100,Unit = "%"})
             SilentAimSection:Slider({Name = "Field Of View",Flag = "SilentAim/FieldOfView",Min = 0,Max = 500,Value = 50})
@@ -227,6 +226,7 @@ local Window = Matr1x.Utilities.UI:Window({
         local CreditsSection = SettingsTab:Section({Name = "Credits",Side = "Right"}) do
             CreditsSection:Label({Text = "This script was made by Matr1x#5430"})
             CreditsSection:Divider()
+            CreditsSection:Label({Text = "Thanks to Jan for awesome Background Patterns"})
             CreditsSection:Label({Text = "Thanks to Infinite Yield Team for Server Hop and Rejoin"})
             CreditsSection:Label({Text = "Thanks to Blissful for Offscreen Arrows"})
             CreditsSection:Label({Text = "Thanks to coasts for Universal ESP"})
@@ -273,8 +273,7 @@ local function GetHitbox(Config)
                     local ScreenPosition, OnScreen = Camera:WorldToViewportPoint(Hitbox.Position)
                     local Magnitude = (Vector2.new(ScreenPosition.X, ScreenPosition.Y) - UserInputService:GetMouseLocation()).Magnitude
                     if OnScreen and Magnitude < FieldOfView and WallCheck(Config.WallCheck,Hitbox,NPC) then
-                        FieldOfView = Magnitude
-                        ClosestHitbox = Hitbox
+                        FieldOfView,ClosestHitbox = Magnitude,Hitbox
                     end
                 end
             end
@@ -301,8 +300,7 @@ local function GetHitboxWithPrediction(Config)
                     local ScreenPosition, OnScreen = Camera:WorldToViewportPoint(Hitbox.Position)
                     local Magnitude = (Vector2.new(ScreenPosition.X, ScreenPosition.Y) - UserInputService:GetMouseLocation()).Magnitude
                     if OnScreen and Magnitude < FieldOfView and WallCheck(Config.WallCheck,Hitbox,NPC) then
-                        FieldOfView = Magnitude
-                        ClosestHitbox = Hitbox
+                        FieldOfView,ClosestHitbox = Magnitude,Hitbox
                     end
                 end
             end
@@ -323,7 +321,6 @@ local function AimAt(Hitbox,Config)
     )
 end
 
-
 local OldNamecall,OldOCIFunction
 OldOCIFunction = hookfunction(OCIFunction,function(...)
     local ToReturn = OldOCIFunction(...)
@@ -332,7 +329,6 @@ OldOCIFunction = hookfunction(OCIFunction,function(...)
         Weapon.Mag = 1
     end return ToReturn
 end)
-local only = false
 OldNamecall = hookmetamethod(game, "__namecall", function(Self, ...)
     local Method,Args = getnamecallmethod(),{...}
     if Method == "FireServer" then
@@ -354,17 +350,17 @@ Ray.Cast = function(...)
             local Camera = Workspace.CurrentCamera
             if Window.Flags["TWR/NoBulletDrop"] then
                 local LookVector = SilentAim.CFrame * CFrame.new(0,0,-2)
-                local Unit = (SilentAim.Position - LookVector.Position).Unit
-                local Velocity = Unit * ((200-200*0*0.5)*2.5*1.2) -- M320
                 Args[1] = LookVector.Position
                 Args[2] = SilentAim.Position - LookVector.Position
             else
+                Args[1] = Camera.CFrame.Position
                 Args[2] = SilentAim.Position - Camera.CFrame.Position
             end
         end
     end
     return OldCast(unpack(Args))
 end
+
 local OldUpdateHUD = GuiModule.UpdateHUD
 GuiModule.UpdateHUD = function(...) local Args = {...}
     if Window.Flags["TWR/InfAmmo"] then
@@ -415,7 +411,7 @@ Matr1x.Utilities.Misc:NewThreadLoop(0,function()
                     DynamicFOV = Window.Flags["Trigger/DynamicFOV"],
                     FieldOfView = Window.Flags["Trigger/FieldOfView"],
                     Priority = Window.Flags["Trigger/Priority"]
-                }) if not TriggerHB then break end
+                }) if not TriggerHB or not Trigger then break end
             end
         end mouse1release()
     end
