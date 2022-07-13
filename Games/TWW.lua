@@ -14,7 +14,7 @@ local Ping = Stats.Network.ServerStatsItem["Data Ping"]
 local Aimbot,SilentAim = false,nil
 
 local Window = Matr1x.Utilities.UI:Window({
-    Name = "Matr1x Hub — "..Matr1x.Current,
+    Name = "Matr1x Hub — "..Matr1x.Game,
     Position = UDim2.new(0.05,0,0.5,-248)
     }) do Window:Watermark({Enabled = true})
 
@@ -102,7 +102,7 @@ local Window = Matr1x.Utilities.UI:Window({
             HighlightSection:Colorpicker({Name = "Outline Color",Flag = "ESP/Player/Highlight/OutlineColor",Value = {1,1,0,0.5,false}})
         end
     end
-    local GameTab = Window:Tab({Name = Matr1x.Current}) do
+    local GameTab = Window:Tab({Name = Matr1x.Game}) do
         local TESPSection = GameTab:Section({Name = "Thunderstruck ESP",Side = "Left"}) do
             TESPSection:Toggle({Name = "Enabled",Flag = "ESP/Thunderstruck/Box/Enabled",Value = false})
             TESPSection:Colorpicker({Name = "Color",Flag = "ESP/Thunderstruck/Enemy",Value = {1,0.75,1,0,false}})
@@ -208,7 +208,6 @@ local Window = Matr1x.Utilities.UI:Window({
             CreditsSection:Label({Text = "Thanks to Blissful for Offscreen Arrows"})
             CreditsSection:Label({Text = "Thanks to coasts for Universal ESP"})
             CreditsSection:Label({Text = "Thanks to el3tric for Bracket V2"})
-            CreditsSection:Label({Text = "❤️ ❤️ ❤️ ❤️"})
         end
     end
 end
@@ -255,8 +254,7 @@ local function GetHitbox(Config)
                     local ScreenPosition, OnScreen = Camera:WorldToViewportPoint(Hitbox.Position)
                     local Magnitude = (Vector2.new(ScreenPosition.X, ScreenPosition.Y) - UserInputService:GetMouseLocation()).Magnitude
                     if OnScreen and Magnitude < FieldOfView and WallCheck(Config.WallCheck,Hitbox,Character) then
-                        FieldOfView = Magnitude
-                        ClosestHitbox = Hitbox
+                        FieldOfView,ClosestHitbox = Magnitude,Hitbox
                     end
                 end
             end
