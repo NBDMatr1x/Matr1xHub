@@ -5,6 +5,12 @@ local PlayerService = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local TeamService = game:GetService("Teams")
 
+local Loaded,PromptLib = false,loadstring(game:HttpGet("https://raw.githubusercontent.com/AlexR32/Roblox/main/PromptLibrary.lua"))()
+PromptLib("Notice me senpai (⁄ ⁄•⁄ω⁄•⁄ ⁄)","You have risk of getting autobanned\nAre you sure you want to load this script?",{
+    {Text = "Yes",LayoutOrder = 0,Primary = false,Callback = function() Loaded = true end},
+    {Text = "No",LayoutOrder = 0,Primary = true,Callback = function() end}
+}) repeat task.wait(1) until Loaded
+
 local LocalPlayer = PlayerService.LocalPlayer
 local Aimbot,SilentAim,Trigger,
 PredictedVelocity,PredictedGravity,
@@ -44,7 +50,7 @@ local BanReasons,BanCommands = {
 }
 
 local Window = Matr1x.Utilities.UI:Window({
-    Name = "Matr1x Hub — "..Matr1x.Current,
+    Name = "Matr1x Hub — "..Matr1x.Game,
     Position = UDim2.new(0.05,0,0.5,-248)
     }) do Window:Watermark({Enabled = true})
 
@@ -182,7 +188,7 @@ local Window = Matr1x.Utilities.UI:Window({
             HighlightSection:Colorpicker({Name = "Outline Color",Flag = "ESP/Player/Highlight/OutlineColor",Value = {1,1,0,0.5,false}})
         end
     end
-    local GameTab = Window:Tab({Name = Matr1x.Current}) do
+    local GameTab = Window:Tab({Name = Matr1x.Game}) do
         local WCSection = GameTab:Section({Name = "Weapon Customization",Side = "Left"}) do
             WCSection:Toggle({Name = "Enabled",Flag = "BadBusiness/WeaponCustom/Enabled",Value = false})
             WCSection:Toggle({Name = "Hide Textures",Flag = "BadBusiness/WeaponCustom/Texture",Value = true})
@@ -301,6 +307,7 @@ local Window = Matr1x.Utilities.UI:Window({
         local CreditsSection = SettingsTab:Section({Name = "Credits",Side = "Right"}) do
             CreditsSection:Label({Text = "This script was made by Matr1x#5430"})
             CreditsSection:Divider()
+            CreditsSection:Label({Text = "Thanks to Jan for awesome Background Patterns"})
             CreditsSection:Label({Text = "Thanks to Infinite Yield Team for Server Hop and Rejoin"})
             CreditsSection:Label({Text = "Thanks to Blissful for Offscreen Arrows"})
             CreditsSection:Label({Text = "Thanks to coasts for Universal ESP"})
@@ -322,33 +329,43 @@ Matr1x.Utilities.Drawing:FOVCircle("Trigger",Window.Flags)
 Matr1x.Utilities.Drawing:FOVCircle("SilentAim",Window.Flags)
 
 do local SetIdentity = syn and syn.set_thread_identity or setidentity
-local OldNamecall,OldTaskSpawn,OldPluginManager,Message--,OldRandom
---[[OldRandom = hookfunction(math.random, function(...)
-    if checkcaller() then return OldRandom(...) end
-    local Args = {...} math.randomseed(1337)
-    if Args[1] == 1 and Args[2] == 64
-    or Args[1] == 1 and Args[2] == 1000 then
-        return math.huge
-    end return OldRandom(...)
-end)]]
+local OldNamecall,OldTaskSpawn,OldRandom,OldPluginManager,Message,DontBlock
+for Index,Connection in pairs(getconnections(workspace.Characters.ChildAdded)) do
+    setupvalue(Connection.Function,4,function() local String = ""
+        for Index = 1, 10 do
+            String = String .. string.char(math.random(97, 121))
+	    end return String
+    end)
+end
+
 OldNamecall = hookmetamethod(game, "__namecall", function(Self, ...)
     local Method,Args = getnamecallmethod(),{...}
     if Method == "FireServer" then
-        if typeof(Args[1]) == "string" and table.find(BanCommands,Args[1]) then
+        if type(Args[1]) == "string" and table.find(BanCommands,Args[1]) then
             for Index, Reason in pairs(BanReasons) do
-                if typeof(Args[2]) == "string" and string.match(Args[2],Reason) then
+                if type(Args[2]) == "string" and string.match(Args[2],Reason) then
                     --print("blocked",Args[2])
                     return
                 end
             end
         end
-    elseif Method == "Destroy" then -- this is very silly
-        if Self.Parent == LocalPlayer.Character then
-            --print("blocked",Self)
+    end
+    if Method == "Destroy" then
+        if Self.Parent == LocalPlayer.Character
+        and Self.Name ~= "z" then
+            print("blocked",Self)
             return
         end
-    end
-    return OldNamecall(Self, ...)
+    end return OldNamecall(Self, ...)
+end)
+OldRandom = hookfunction(getrenv().math.random, function(...)
+    if checkcaller() then return OldRandom(...) end local Args = {...}
+    if Args[1] == 97 and Args[2] == 122 then return 122 end
+    if Args[1] == 1000 then return 1000 end
+    if Args[1] == 1 and Args[2] == 1000 then
+        --print("random blocked")
+        return math.huge
+    end return OldRandom(...)
 end)
 OldTaskSpawn = hookfunction(getrenv().task.spawn, function(...)
     if checkcaller() then return OldTaskSpawn(...) end local Args = {...}
@@ -362,8 +379,7 @@ OldTaskSpawn = hookfunction(getrenv().task.spawn, function(...)
     end
     return OldTaskSpawn(...)
 end) -- Thanks to Kiriot22
-task.spawn(function()
-    SetIdentity(2)
+task.spawn(function() SetIdentity(2)
     local Success,Error = pcall(getrenv().PluginManager)
     Message = Error
 end)
@@ -392,18 +408,14 @@ local function UpdateRecoil()
         and rawget(Config,"Model") then
             if Config.Recoil and Config.Recoil.Default and
                 DefaultRecoil[Config.Model] then
-
                 local Modified = Matr1x.Config.GameFeatures.WeaponModification
                 local Default = DefaultRecoil[Config.Model]
-
                 Config.Recoil.Default.WeaponScale = Modified.Enabled
                 and Default.WeaponScale * Modified.WeaponScale
                 or Default.WeaponScale
-
                 Config.Recoil.Default.CameraScale = Modified.Enabled
                 and Default.CameraScale * Modified.CameraScale
                 or Default.CameraScale
-
                 Config.Recoil.Default.RecoilScale = Modified.Enabled
                 and Default.RecoilScale * Modified.RecoilScale
                 or Default.RecoilScale
@@ -558,7 +570,7 @@ local function CustomizeGun(Config)
                 Instance.Transparency = 1
             elseif Instance:IsA("BasePart") and Instance.Transparency < 1
             and Instance.Reflectance < 1 then
-                Instance.Color = Matr1x.Utilities.UI:TableToColor(Config.Color)
+                Instance.Color = Config.Color[6]
                 Instance.Transparency = Config.Color[4] > 0.95 and 0.95 or Config.Color[4]
                 Instance.Reflectance = Config.Reflectance
                 Instance.Material = Config.Material
@@ -575,7 +587,7 @@ local function CustomizeArms(Config)
         elseif Instance:IsA("BasePart") 
         and Instance.Transparency < 1
         and Instance.Reflectance < 1 then
-            Instance.Color = Matr1x.Utilities.UI:TableToColor(Config.Color)
+            Instance.Color = Config.Color[6]
             Instance.Transparency = Config.Color[4] > 0.95 and 0.95 or Config.Color[4]
             Instance.Reflectance = Config.Reflectance
             Instance.Material = Config.Material
@@ -589,19 +601,22 @@ local function ComputeProjectiles(Config,Hitbox)
     local ID = Tortoiseshell.Projectiles:GetID()
     local RayResult =  Raycast(Camera.CFrame.Position,
     Hitbox.Position - Camera.CFrame.Position,{Hitbox})
+    local LookVector = (Hitbox.Position - Camera.CFrame.Position).Unit
 
-    for Index = 1,Config.Projectile.Amount do
+    --[[for Index = 1,Config.Projectile.Amount do
         table.insert(Projectiles,{
             (Tortoiseshell.Input.Reticle:LookVector(Config.Projectile.Choke)
             + Vector3.new(0,Config.Projectile.GravityCorrection/1000,0)).Unit,ID
         })
+    end]]
+    for Index = 1,Config.Projectile.Amount do
+        table.insert(Projectiles,{
+            LookVector,ID
+        })
     end
-    
-    if RayResult then
-        return Projectiles,RayResult.Position,RayResult.Normal,ID
-    else
-        return Projectiles,Hitbox.Position,Vector3.one,ID
-    end
+
+    return Camera.CFrame.Position,Projectiles,
+    RayResult.Position,RayResult.Normal,ID
 end
 local function AutoShoot(Hitbox,Enabled)
     if not Enabled then return end
@@ -617,13 +632,20 @@ local function AutoShoot(Hitbox,Enabled)
         if Ammo and Ammo.Server.Value > 0 then if not Hitbox then return end
             local FireModeFromList = Config.FireModeList[FireMode.Server.Value]
             local CurrentFireMode = Config.FireModes[FireModeFromList]
-            local Projectiles,RayPosition,RayNormal,ID = ComputeProjectiles(Config,Hitbox[2])
+            local ReticlePosition,ShootProjectiles,RayPosition,RayNormal,ID
+            = ComputeProjectiles(Config,Hitbox[2])
+            local Camera = Workspace.CurrentCamera
             
-            Tortoiseshell.Network:Fire("Item_Paintball","Shoot",Weapon,
-            Tortoiseshell.Input.Reticle:GetPosition(),Projectiles)
+            Tortoiseshell.Network:Fire("Item_Paintball","Shoot",
+            Weapon,ReticlePosition,ShootProjectiles)
 
-            Tortoiseshell.Network:Fire("Projectiles","__Hit",ID,
-            RayPosition,Hitbox[2],RayNormal,Hitbox[1])
+            task.wait((Camera.CFrame.Position - RayPosition).Magnitude
+            / Projectiles[Config.Projectile.Template].Speed)
+
+            for Projectile = 1,#ShootProjectiles do
+                Tortoiseshell.Network:Fire("Projectiles","__Hit",
+                ID,RayPosition,Hitbox[2],RayNormal,Hitbox[1])
+            end
 
             task.wait(60/CurrentFireMode.FireRate)
             if (OldAmmo - Ammo.Server.Value) >= 1 then
@@ -667,8 +689,7 @@ local function GetHitbox(Config)
                     local ScreenPosition, OnScreen = Camera:WorldToViewportPoint(Hitbox.Position)
                     local Magnitude = (Vector2.new(ScreenPosition.X, ScreenPosition.Y) - UserInputService:GetMouseLocation()).Magnitude
                     if OnScreen and Magnitude < FieldOfView and WallCheck(Config.WallCheck,Hitbox) then
-                        FieldOfView = Magnitude
-                        ClosestHitbox = {Player,Hitbox}
+                        FieldOfView,ClosestHitbox = Magnitude,{Player,Hitbox}
                     end
                 end
             end
@@ -700,8 +721,7 @@ local function GetHitboxWithPrediction(Config)
 
                     local Magnitude = (Vector2.new(ScreenPosition.X, ScreenPosition.Y) - UserInputService:GetMouseLocation()).Magnitude
                     if OnScreen and Magnitude < FieldOfView and WallCheck(Config.WallCheck,Hitbox) then
-                        FieldOfView = Magnitude
-                        ClosestHitbox = Hitbox
+                        FieldOfView,ClosestHitbox = Magnitude,Hitbox
                     end
                 end
             end
@@ -713,6 +733,7 @@ end
 local function GetHitboxAllFOV(Config)
     local Camera = Workspace.CurrentCamera
     local Distance,ClosestHitbox = math.huge,nil
+
     for Index, Player in pairs(PlayerService:GetPlayers()) do
         local Character,Shield = GetCharacterInfo(Player,true)
         if Player ~= LocalPlayer and Shield and TeamCheck(Player) then
@@ -731,9 +752,7 @@ local function GetHitboxAllFOV(Config)
     return ClosestHitbox
 end
 
-local function AimAt(Hitbox,Config)
-    if not Hitbox then return end
-    Hitbox = Hitbox[2]
+local function AimAt(Hitbox,Config) if not Hitbox then return end Hitbox = Hitbox[2]
     local Camera = Workspace.CurrentCamera
     local Mouse = UserInputService:GetMouseLocation()
 
@@ -869,8 +888,8 @@ Matr1x.Utilities.Misc:NewThreadLoop(0,function()
     if not Window.Flags["BadBusiness/AutoShoot"] then return end
     AutoShoot(Window.Flags["BadBusiness/AutoShoot/AllFOV"]
     and GetHitboxAllFOV({
-        WallCheck = Window.Flags["Aimbot/WallCheck"],
-        Priority = Window.Flags["Aimbot/Priority"]
+        WallCheck = Window.Flags["SilentAim/WallCheck"],
+        Priority = Window.Flags["SilentAim/Priority"]
     }) or SilentAim,Window.Flags["BadBusiness/AutoShoot"])
 end)
 Matr1x.Utilities.Misc:NewThreadLoop(0,function()
@@ -895,7 +914,7 @@ Matr1x.Utilities.Misc:NewThreadLoop(0,function()
                     DynamicFOV = Window.Flags["Trigger/DynamicFOV"],
                     FieldOfView = Window.Flags["Trigger/FieldOfView"],
                     Priority = Window.Flags["Trigger/Priority"]
-                }) if not TriggerHB then break end
+                }) if not TriggerHB or not Trigger then break end
             end
         end ToggleShoot(false)
     end
@@ -923,19 +942,15 @@ Matr1x.Utilities.Misc:NewThreadLoop(0,function()
         local First,Second = GetCurrentConfig()
         if not First and not Second then return end
         local Configs = {First = First, Second = Second}
-
         OldConfigs.First = ShallowCopy(First)
         OldConfigs.Second = ShallowCopy(Second)
-
         for Index,Config in pairs(Configs) do
             if Config.Recoil and Config.Recoil.Default then
                 local OldConfig = OldConfigs[Index]
                 Config.Recoil.Default.WeaponScale = 
                 OldConfig.Recoil.Default.WeaponScale * (Window.Flags["BadBusiness/WeaponMod/WeaponScale"] / 100)
-
                 Config.Recoil.Default.CameraScale = 
                 OldConfig.Recoil.Default.CameraScale * (Window.Flags["BadBusiness/WeaponMod/CameraScale"] / 100)
-
                 Config.Recoil.Default.RecoilScale = 
                 OldConfig.Recoil.Default.RecoilScale * (Window.Flags["BadBusiness/WeaponMod/RecoilScale"] / 100)
             end
