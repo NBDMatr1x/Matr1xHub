@@ -11,12 +11,12 @@ local Ping = Stats.Network.ServerStatsItem["Data Ping"]
 local Aimbot,SilentAim = false,nil
 
 local Window = Matr1x.Utilities.UI:Window({
-    Name = "Matr1x Hub — "..Matr1x.Current,
+    Name = "Matr1x Hub — "..Matr1x.Game,
     Position = UDim2.new(0.05,0,0.5,-248),
     Size = UDim2.new(0,496,0,496)
     }) do Window:Watermark({Enabled = true})
 
-    local GameTab = Window:Tab({Name = Matr1x.Current}) do
+    local GameTab = Window:Tab({Name = Matr1x.Game}) do
         local FlySection = GameTab:Section({Name = "Fly",Side = "Right"}) do
             FlySection:Toggle({Name = "Enabled",Flag = "ST/Fly/Enabled",Value = false})
             :Keybind({Flag = "ST/Fly/Keybind"})
@@ -139,7 +139,6 @@ local Window = Matr1x.Utilities.UI:Window({
             CreditsSection:Label({Text = "Thanks to Blissful for Offscreen Arrows"})
             CreditsSection:Label({Text = "Thanks to coasts for Universal ESP"})
             CreditsSection:Label({Text = "Thanks to el3tric for Bracket V2"})
-            CreditsSection:Label({Text = "❤️ ❤️ ❤️ ❤️"})
         end
     end
 end
