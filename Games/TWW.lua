@@ -51,13 +51,13 @@ local Window = Matr1x.Utilities.UI:Window({
             GlobalSection:Toggle({Name = "Use Team Color",Flag = "ESP/Player/TeamColor",Value = false})
         end
         local BoxSection = VisualsTab:Section({Name = "Boxes",Side = "Left"}) do
-            BoxSection:Toggle({Name = "Enabled",Flag = "ESP/Player/Box/Enabled",Value = false})
+            BoxSection:Toggle({Name = "Box Enabled",Flag = "ESP/Player/Box/Enabled",Value = false})
             BoxSection:Toggle({Name = "Filled",Flag = "ESP/Player/Box/Filled",Value = false})
             BoxSection:Toggle({Name = "Outline",Flag = "ESP/Player/Box/Outline",Value = true})
             BoxSection:Slider({Name = "Thickness",Flag = "ESP/Player/Box/Thickness",Min = 1,Max = 10,Value = 1})
             BoxSection:Slider({Name = "Transparency",Flag = "ESP/Player/Box/Transparency",Min = 0,Max = 1,Precise = 2,Value = 0})
-            BoxSection:Divider({Text = "Text / Info"})
-            BoxSection:Toggle({Name = "Enabled",Flag = "ESP/Player/Text/Enabled",Value = false})
+            BoxSection:Divider()
+            BoxSection:Toggle({Name = "Text Enabled",Flag = "ESP/Player/Text/Enabled",Value = false})
             BoxSection:Toggle({Name = "Outline",Flag = "ESP/Player/Text/Outline",Value = true})
             BoxSection:Toggle({Name = "Autoscale",Flag = "ESP/Player/Text/Autoscale",Value = true})
             BoxSection:Dropdown({Name = "Font",Flag = "ESP/Player/Text/Font",List = {
@@ -102,7 +102,7 @@ local Window = Matr1x.Utilities.UI:Window({
             HighlightSection:Colorpicker({Name = "Outline Color",Flag = "ESP/Player/Highlight/OutlineColor",Value = {1,1,0,0.5,false}})
         end
     end
-    local GameTab = Window:Tab({Name = Matr1x.Game}) do
+    local GameTab = Window:Tab({Name = "Miscellaneous"}) do
         local TESPSection = GameTab:Section({Name = "Thunderstruck ESP",Side = "Left"}) do
             TESPSection:Toggle({Name = "Enabled",Flag = "ESP/Thunderstruck/Box/Enabled",Value = false})
             TESPSection:Colorpicker({Name = "Color",Flag = "ESP/Thunderstruck/Enemy",Value = {1,0.75,1,0,false}})
