@@ -14,22 +14,20 @@ local LocalPlayer = PlayerService.LocalPlayer
 local Aimbot,SilentAim,NPCFolder,Network,
 GroundTip,AircraftTip,PredictedVelocity
 = false,nil,Workspace.Bots,{},nil,nil,1000
+local NoClipEvent
 
-local TI = TweenInfo.new(10,Enum.EasingStyle.Linear,
-Enum.EasingDirection.InOut,0,false,0)
-local TI2 = TweenInfo.new(5,Enum.EasingStyle.Linear,
-Enum.EasingDirection.InOut,0,false,0)
-
-local AFKPlaces = {
-    CFrame.new(3853.97021484375, 172.68963623046875, -429.0279541015625), -- City Hall
-    CFrame.new(-5125.18359375, 105.015625, 5607.85791015625), -- Iraq
-    CFrame.new(-1584.665771484375, 820.1268310546875, -4451.94775390625), -- Mountain Outpost
-    CFrame.new(6282.3046875, 125.08175659179688, 2208.153076171875), -- Navalbase
-    CFrame.new(469.768310546875, 21.769287109375, 2273.580078125), -- Quary
-    CFrame.new(1225.836669921875, 55.94757080078125, -5377.25439453125), -- Power Station
-    CFrame.new(6866.8974609375, 181.8929443359375, -1910.042236328125), -- Stronghold
-    CFrame.new(497.245361328125, 113.73883056640625, -209.046875) -- Vietnama Village
-}
+local Teleports,TI,TI2 = {
+    ["Forward Operating Base"] = Vector3.new(-4004.792, 64.188, 808.497),
+    ["Ronograd City"] = Vector3.new(3814.537, 176.622, -160.004),
+    ["El Chara"] = Vector3.new(-4789.463, 107.638, 5298.004),
+    ["Communications Tower"] = Vector3.new(-1487.503, 809.622, -4416.927),
+    ["Naval Docks"] = Vector3.new(6167.5, 129.622, 2092),
+    ["Quarry"] = Vector3.new(272.762, 85.563, 2208.969),
+    ["Department of Utilities"] = Vector3.new(1176.5, 60.247, -5206),
+    ["Fort Ronograd"] = Vector3.new(6269.501, 185.632, -1232.474),
+    ["Vietnama Village"] = Vector3.new(539.497, 117.622, -358.074)
+},TweenInfo.new(20,Enum.EasingStyle.Linear,Enum.EasingDirection.InOut,0,false,0),
+TweenInfo.new(5,Enum.EasingStyle.Linear,Enum.EasingDirection.InOut,0,false,0)
 
 local Window = Matr1x.Utilities.UI:Window({
     Name = "Matr1x Hub — "..Matr1x.Game,
@@ -39,47 +37,49 @@ local Window = Matr1x.Utilities.UI:Window({
     local AimAssistTab = Window:Tab({Name = "Combat"}) do
         local GlobalSection = AimAssistTab:Section({Name = "Global",Side = "Left"}) do
             GlobalSection:Toggle({Name = "Team Check",Flag = "TeamCheck",Value = false})
-            GlobalSection:Dropdown({Name = "Target Mode",Flag = "BRM5/TargetMode",List = {
-                {Name = "Player",Mode = "Button"},
-                {Name = "NPC",Mode = "Button",Value = true}
-            }})
+            GlobalSection:Toggle({Name = "NPC Mode",Flag = "BRM5/NPCMode",Value = true})
         end
         local AimbotSection = AimAssistTab:Section({Name = "Aimbot",Side = "Left"}) do
             AimbotSection:Toggle({Name = "Enabled",Flag = "Aimbot/Enabled",Value = false})
             AimbotSection:Toggle({Name = "Prediction",Flag = "Aimbot/Prediction",Value = false})
             AimbotSection:Toggle({Name = "Visibility Check",Flag = "Aimbot/WallCheck",Value = false})
+            AimbotSection:Toggle({Name = "Distance Check",Flag = "Aimbot/DistanceCheck",Value = false})
             AimbotSection:Toggle({Name = "Dynamic FOV",Flag = "Aimbot/DynamicFOV",Value = false})
             AimbotSection:Keybind({Name = "Keybind",Flag = "Aimbot/Keybind",Value = "MouseButton2",
             Mouse = true,Callback = function(Key,KeyDown) Aimbot = Window.Flags["Aimbot/Enabled"] and KeyDown end})
             AimbotSection:Slider({Name = "Smoothness",Flag = "Aimbot/Smoothness",Min = 0,Max = 100,Value = 25,Unit = "%"})
             AimbotSection:Slider({Name = "Field Of View",Flag = "Aimbot/FieldOfView",Min = 0,Max = 500,Value = 100})
-            AimbotSection:Dropdown({Name = "Priority",Flag = "Aimbot/Priority",List = {
+            AimbotSection:Slider({Name = "Distance",Flag = "Aimbot/Distance",Min = 25,Max = 1000,Value = 250,Unit = "meters"})
+            AimbotSection:Dropdown({Name = "Body Parts",Flag = "Aimbot/BodyParts",List = {
                 {Name = "Head",Mode = "Toggle",Value = true},
-                {Name = "HumanoidRootPart",Mode = "Toggle",Value = true}
+                {Name = "HumanoidRootPart",Mode = "Toggle"}
             }})
         end
         local AFOVSection = AimAssistTab:Section({Name = "Aimbot FOV Circle",Side = "Left"}) do
             AFOVSection:Toggle({Name = "Enabled",Flag = "Aimbot/Circle/Enabled",Value = true})
             AFOVSection:Toggle({Name = "Filled",Flag = "Aimbot/Circle/Filled",Value = false})
-            AFOVSection:Colorpicker({Name = "Color",Flag = "Aimbot/Circle/Color",Value = {1,0.75,1,0.5,false}})
-            AFOVSection:Slider({Name = "NumSides",Flag = "Aimbot/Circle/NumSides",Min = 3,Max = 100,Value = 100})
-            AFOVSection:Slider({Name = "Thickness",Flag = "Aimbot/Circle/Thickness",Min = 1,Max = 10,Value = 1})
+            AFOVSection:Colorpicker({Name = "Color",Flag = "Aimbot/Circle/Color",Value = {1,0.66666662693024,1,0.25,false}})
+            AFOVSection:Slider({Name = "NumSides",Flag = "Aimbot/Circle/NumSides",Min = 3,Max = 100,Value = 14})
+            AFOVSection:Slider({Name = "Thickness",Flag = "Aimbot/Circle/Thickness",Min = 1,Max = 10,Value = 2})
         end
         local TFOVSection = AimAssistTab:Section({Name = "Trigger FOV Circle",Side = "Left"}) do
             TFOVSection:Toggle({Name = "Enabled",Flag = "Trigger/Circle/Enabled",Value = true})
             TFOVSection:Toggle({Name = "Filled",Flag = "Trigger/Circle/Filled",Value = false})
-            TFOVSection:Colorpicker({Name = "Color",Flag = "Trigger/Circle/Color",Value = {1,0.25,1,0.5,true}})
-            TFOVSection:Slider({Name = "NumSides",Flag = "Trigger/Circle/NumSides",Min = 3,Max = 100,Value = 100})
-            TFOVSection:Slider({Name = "Thickness",Flag = "Trigger/Circle/Thickness",Min = 1,Max = 10,Value = 1})
+            TFOVSection:Colorpicker({Name = "Color",Flag = "Trigger/Circle/Color",
+            Value = {0.0833333358168602,0.6666666269302368,1,0.25,false}})
+            TFOVSection:Slider({Name = "NumSides",Flag = "Trigger/Circle/NumSides",Min = 3,Max = 100,Value = 14})
+            TFOVSection:Slider({Name = "Thickness",Flag = "Trigger/Circle/Thickness",Min = 1,Max = 10,Value = 2})
         end
         local SilentAimSection = AimAssistTab:Section({Name = "Silent Aim",Side = "Right"}) do
             SilentAimSection:Toggle({Name = "Enabled",Flag = "SilentAim/Enabled",Value = false})
             :Keybind({Mouse = true,Flag = "SilentAim/Keybind"})
             SilentAimSection:Toggle({Name = "Visibility Check",Flag = "SilentAim/WallCheck",Value = false})
+            SilentAimSection:Toggle({Name = "Distance Check",Flag = "SilentAim/DistanceCheck",Value = false})
             SilentAimSection:Toggle({Name = "Dynamic FOV",Flag = "SilentAim/DynamicFOV",Value = false})
             SilentAimSection:Slider({Name = "Hit Chance",Flag = "SilentAim/HitChance",Min = 0,Max = 100,Value = 100,Unit = "%"})
-            SilentAimSection:Slider({Name = "Field Of View",Flag = "SilentAim/FieldOfView",Min = 0,Max = 500,Value = 50})
-            SilentAimSection:Dropdown({Name = "Priority",Flag = "SilentAim/Priority",List = {
+            SilentAimSection:Slider({Name = "Field Of View",Flag = "SilentAim/FieldOfView",Min = 0,Max = 500,Value = 100})
+            SilentAimSection:Slider({Name = "Distance",Flag = "SilentAim/Distance",Min = 25,Max = 1000,Value = 250,Unit = "meters"})
+            SilentAimSection:Dropdown({Name = "Body Parts",Flag = "SilentAim/BodyParts",List = {
                 {Name = "Head",Mode = "Toggle",Value = true},
                 {Name = "HumanoidRootPart",Mode = "Toggle"}
             }})
@@ -87,36 +87,42 @@ local Window = Matr1x.Utilities.UI:Window({
         local SAFOVSection = AimAssistTab:Section({Name = "Silent Aim FOV Circle",Side = "Right"}) do
             SAFOVSection:Toggle({Name = "Enabled",Flag = "SilentAim/Circle/Enabled",Value = true})
             SAFOVSection:Toggle({Name = "Filled",Flag = "SilentAim/Circle/Filled",Value = false})
-            SAFOVSection:Colorpicker({Name = "Color",Flag = "SilentAim/Circle/Color",Value = {0.66666668653488,0.75,1,0.5,false}})
-            SAFOVSection:Slider({Name = "NumSides",Flag = "SilentAim/Circle/NumSides",Min = 3,Max = 100,Value = 100})
-            SAFOVSection:Slider({Name = "Thickness",Flag = "SilentAim/Circle/Thickness",Min = 1,Max = 10,Value = 1})
+            SAFOVSection:Colorpicker({Name = "Color",Flag = "SilentAim/Circle/Color",
+            Value = {0.6666666865348816,0.6666666269302368,1,0.25,false}})
+            SAFOVSection:Slider({Name = "NumSides",Flag = "SilentAim/Circle/NumSides",Min = 3,Max = 100,Value = 14})
+            SAFOVSection:Slider({Name = "Thickness",Flag = "SilentAim/Circle/Thickness",Min = 1,Max = 10,Value = 2})
         end
         local TriggerSection = AimAssistTab:Section({Name = "Trigger",Side = "Right"}) do
             TriggerSection:Toggle({Name = "Enabled",Flag = "Trigger/Enabled",Value = false})
-            TriggerSection:Toggle({Name = "Prediction",Flag = "Trigger/Prediction",Value = false})
+            TriggerSection:Toggle({Name = "Prediction",Flag = "Trigger/Prediction",Value = true})
             TriggerSection:Toggle({Name = "Visibility Check",Flag = "Trigger/WallCheck",Value = true})
+            TriggerSection:Toggle({Name = "Distance Check",Flag = "Trigger/DistanceCheck",Value = false})
             TriggerSection:Toggle({Name = "Dynamic FOV",Flag = "Trigger/DynamicFOV",Value = false})
             TriggerSection:Keybind({Name = "Keybind",Flag = "Trigger/Keybind",Value = "MouseButton2",
             Mouse = true,Callback = function(Key,KeyDown) Trigger = Window.Flags["Trigger/Enabled"] and KeyDown end})
-            TriggerSection:Slider({Name = "Field Of View",Flag = "Trigger/FieldOfView",Min = 0,Max = 500,Value = 10})
+            TriggerSection:Slider({Name = "Field Of View",Flag = "Trigger/FieldOfView",Min = 0,Max = 500,Value = 25})
+            TriggerSection:Slider({Name = "Distance",Flag = "Trigger/Distance",Min = 25,Max = 1000,Value = 250,Unit = "meters"})
             TriggerSection:Slider({Name = "Delay",Flag = "Trigger/Delay",Min = 0,Max = 1,Precise = 2,Value = 0.15})
             TriggerSection:Toggle({Name = "Hold Mode",Flag = "Trigger/HoldMode",Value = false})
             TriggerSection:Toggle({Name = "Switch To RMB",Flag = "Trigger/RMBMode",Value = false})
-            TriggerSection:Dropdown({Name = "Priority",Flag = "Trigger/Priority",List = {
+            TriggerSection:Dropdown({Name = "Body Parts",Flag = "Trigger/BodyParts",List = {
                 {Name = "Head",Mode = "Toggle",Value = true},
-                {Name = "HumanoidRootPart",Mode = "Toggle",Value = true}
+                {Name = "HumanoidRootPart",Mode = "Toggle"}
             }})
         end
     end
     local VisualsTab = Window:Tab({Name = "Visuals"}) do
         local GlobalSection = VisualsTab:Section({Name = "Global",Side = "Left"}) do
-            GlobalSection:Colorpicker({Name = "Ally Color",Flag = "ESP/Player/Ally",Value = {0.33333334326744,0.75,1,0,false}})
-            GlobalSection:Colorpicker({Name = "Enemy Color",Flag = "ESP/Player/Enemy",Value = {1,0.75,1,0,false}})
+            GlobalSection:Colorpicker({Name = "Ally Color",Flag = "ESP/Player/Ally",Value = {0.3333333432674408,0.6666666269302368,1,0,false}})
+            GlobalSection:Colorpicker({Name = "Enemy Color",Flag = "ESP/Player/Enemy",Value = {1,0.6666666269302368,1,0,false}})
             GlobalSection:Toggle({Name = "Team Check",Flag = "ESP/Player/TeamCheck",Value = false})
             GlobalSection:Toggle({Name = "Use Team Color",Flag = "ESP/Player/TeamColor",Value = false})
+            GlobalSection:Toggle({Name = "Distance Check",Flag = "ESP/Player/DistanceCheck",Value = false})
+            GlobalSection:Slider({Name = "Distance",Flag = "ESP/Player/Distance",Min = 25,Max = 1000,Value = 250,Unit = "meters"})
         end
         local BoxSection = VisualsTab:Section({Name = "Boxes",Side = "Left"}) do
             BoxSection:Toggle({Name = "Box Enabled",Flag = "ESP/Player/Box/Enabled",Value = false})
+            BoxSection:Toggle({Name = "Healthbar",Flag = "ESP/Player/Box/Healthbar",Value = false})
             BoxSection:Toggle({Name = "Filled",Flag = "ESP/Player/Box/Filled",Value = false})
             BoxSection:Toggle({Name = "Outline",Flag = "ESP/Player/Box/Outline",Value = true})
             BoxSection:Slider({Name = "Thickness",Flag = "ESP/Player/Box/Thickness",Min = 1,Max = 10,Value = 1})
@@ -126,10 +132,10 @@ local Window = Matr1x.Utilities.UI:Window({
             BoxSection:Toggle({Name = "Outline",Flag = "ESP/Player/Text/Outline",Value = true})
             BoxSection:Toggle({Name = "Autoscale",Flag = "ESP/Player/Text/Autoscale",Value = true})
             BoxSection:Dropdown({Name = "Font",Flag = "ESP/Player/Text/Font",List = {
-                {Name = "UI",Mode = "Button"},
+                {Name = "UI",Mode = "Button",Value = true},
                 {Name = "System",Mode = "Button"},
                 {Name = "Plex",Mode = "Button"},
-                {Name = "Monospace",Mode = "Button",Value = true}
+                {Name = "Monospace",Mode = "Button"}
             }})
             BoxSection:Slider({Name = "Size",Flag = "ESP/Player/Text/Size",Min = 13,Max = 100,Value = 16})
             BoxSection:Slider({Name = "Transparency",Flag = "ESP/Player/Text/Transparency",Min = 0,Max = 1,Precise = 2,Value = 0})
@@ -137,6 +143,7 @@ local Window = Matr1x.Utilities.UI:Window({
         local OoVSection = VisualsTab:Section({Name = "Offscreen Arrows",Side = "Left"}) do
             OoVSection:Toggle({Name = "Enabled",Flag = "ESP/Player/Arrow/Enabled",Value = false})
             OoVSection:Toggle({Name = "Filled",Flag = "ESP/Player/Arrow/Filled",Value = true})
+            OoVSection:Toggle({Name = "Outline",Flag = "ESP/Player/Arrow/Outline",Value = true})
             OoVSection:Slider({Name = "Width",Flag = "ESP/Player/Arrow/Width",Min = 14,Max = 28,Value = 18})
             OoVSection:Slider({Name = "Height",Flag = "ESP/Player/Arrow/Height",Min = 14,Max = 28,Value = 28})
             OoVSection:Slider({Name = "Distance From Center",Flag = "ESP/Player/Arrow/Distance",Min = 80,Max = 200,Value = 200})
@@ -146,6 +153,7 @@ local Window = Matr1x.Utilities.UI:Window({
         local HeadSection = VisualsTab:Section({Name = "Head Circles",Side = "Right"}) do
             HeadSection:Toggle({Name = "Enabled",Flag = "ESP/Player/Head/Enabled",Value = false})
             HeadSection:Toggle({Name = "Filled",Flag = "ESP/Player/Head/Filled",Value = true})
+            HeadSection:Toggle({Name = "Outline",Flag = "ESP/Player/Head/Outline",Value = true})
             HeadSection:Toggle({Name = "Autoscale",Flag = "ESP/Player/Head/Autoscale",Value = true})
             HeadSection:Slider({Name = "Radius",Flag = "ESP/Player/Head/Radius",Min = 1,Max = 10,Value = 8})
             HeadSection:Slider({Name = "NumSides",Flag = "ESP/Player/Head/NumSides",Min = 3,Max = 100,Value = 4})
@@ -172,6 +180,8 @@ local Window = Matr1x.Utilities.UI:Window({
             GlobalSection:Colorpicker({Name = "Civilian Color",Flag = "ESP/NPC/Ally",Value = {0.33333334326744,0.75,1,0,false}})
             GlobalSection:Colorpicker({Name = "Enemy Color",Flag = "ESP/NPC/Enemy",Value = {1,0.75,1,0,false}})
             GlobalSection:Toggle({Name = "Hide Civilians",Flag = "ESP/NPC/TeamCheck",Value = true})
+            GlobalSection:Toggle({Name = "Distance Check",Flag = "ESP/NPC/DistanceCheck",Value = true})
+            GlobalSection:Slider({Name = "Distance",Flag = "ESP/NPC/Distance",Min = 25,Max = 1000,Value = 250,Unit = "meters"})
         end
         local BoxSection = NPCVisualsTab:Section({Name = "Boxes",Side = "Left"}) do
             BoxSection:Toggle({Name = "Box Enabled",Flag = "ESP/NPC/Box/Enabled",Value = false})
@@ -184,10 +194,10 @@ local Window = Matr1x.Utilities.UI:Window({
             BoxSection:Toggle({Name = "Outline",Flag = "ESP/NPC/Text/Outline",Value = true})
             BoxSection:Toggle({Name = "Autoscale",Flag = "ESP/NPC/Text/Autoscale",Value = true})
             BoxSection:Dropdown({Name = "Font",Flag = "ESP/NPC/Text/Font",List = {
-                {Name = "UI",Mode = "Button"},
+                {Name = "UI",Mode = "Button",Value = true},
                 {Name = "System",Mode = "Button"},
                 {Name = "Plex",Mode = "Button"},
-                {Name = "Monospace",Mode = "Button",Value = true}
+                {Name = "Monospace",Mode = "Button"}
             }})
             BoxSection:Slider({Name = "Size",Flag = "ESP/NPC/Text/Size",Min = 13,Max = 100,Value = 16})
             BoxSection:Slider({Name = "Transparency",Flag = "ESP/NPC/Text/Transparency",Min = 0,Max = 1,Precise = 2,Value = 0})
@@ -195,6 +205,7 @@ local Window = Matr1x.Utilities.UI:Window({
         local OoVSection = NPCVisualsTab:Section({Name = "Offscreen Arrows",Side = "Left"}) do
             OoVSection:Toggle({Name = "Enabled",Flag = "ESP/NPC/Arrow/Enabled",Value = false})
             OoVSection:Toggle({Name = "Filled",Flag = "ESP/NPC/Arrow/Filled",Value = true})
+            OoVSection:Toggle({Name = "Outline",Flag = "ESP/NPC/Arrow/Outline",Value = true})
             OoVSection:Slider({Name = "Height",Flag = "ESP/NPC/Arrow/Height",Min = 14,Max = 28,Value = 28})
             OoVSection:Slider({Name = "Width",Flag = "ESP/NPC/Arrow/Width",Min = 14,Max = 28,Value = 18})
             OoVSection:Slider({Name = "Distance From Center",Flag = "ESP/NPC/Arrow/Distance",Min = 80,Max = 200,Value = 200})
@@ -204,6 +215,7 @@ local Window = Matr1x.Utilities.UI:Window({
         local HeadSection = NPCVisualsTab:Section({Name = "Head Circles",Side = "Right"}) do
             HeadSection:Toggle({Name = "Enabled",Flag = "ESP/NPC/Head/Enabled",Value = false})
             HeadSection:Toggle({Name = "Filled",Flag = "ESP/NPC/Head/Filled",Value = true})
+            HeadSection:Toggle({Name = "Outline",Flag = "ESP/NPC/Head/Outline",Value = true})
             HeadSection:Toggle({Name = "Autoscale",Flag = "ESP/NPC/Head/Autoscale",Value = true})
             HeadSection:Slider({Name = "Radius",Flag = "ESP/NPC/Head/Radius",Min = 1,Max = 10,Value = 8})
             HeadSection:Slider({Name = "NumSides",Flag = "ESP/NPC/Head/NumSides",Min = 3,Max = 100,Value = 4})
@@ -225,8 +237,8 @@ local Window = Matr1x.Utilities.UI:Window({
             HighlightSection:Colorpicker({Name = "Outline Color",Flag = "ESP/NPC/Highlight/OutlineColor",Value = {1,1,0,0.5,false}})
         end
     end
-    local GameTab = Window:Tab({Name = "Miscellaneous"}) do
-        local EnvSection = GameTab:Section({Name = "Environment"}) do
+    local MiscTab = Window:Tab({Name = "Miscellaneous"}) do
+        local EnvSection = MiscTab:Section({Name = "Environment"}) do
             EnvSection:Toggle({Name = "Enabled",Flag = "BRM5/Lighting/Enabled",Value = false})
             EnvSection:Toggle({Name = "Brightness",Flag = "BRM5/Lighting/Brightness",Value = false,Callback = function(Bool)
                 Lighting.GlobalShadows = not Bool
@@ -234,7 +246,7 @@ local Window = Matr1x.Utilities.UI:Window({
             EnvSection:Slider({Name = "Clock Time",Flag = "BRM5/Lighting/Time",Min = 0,Max = 24,Value = 12})
             EnvSection:Slider({Name = "Fog Density",Flag = "BRM5/Lighting/Fog",Min = 0,Max = 1,Precise = 2,Value = 0.25})
         end
-        local WeaponSection = GameTab:Section({Name = "Weapon"}) do
+        local WeaponSection = MiscTab:Section({Name = "Weapon"}) do
             WeaponSection:Toggle({Name = "Recoil",Flag = "BRM5/Recoil/Enabled",Value = false})
             WeaponSection:Slider({Name = "Recoil Percent",Flag = "BRM5/Recoil/Value",Min = 0,Max = 100,Value = 0,Unit = "%"})
             WeaponSection:Toggle({Name = "Instant Hit",Flag = "BRM5/BulletDrop",Value = false})
@@ -244,51 +256,43 @@ local Window = Matr1x.Utilities.UI:Window({
             WeaponSection:Toggle({Name = "Rapid Fire",Flag = "BRM5/RapidFire/Enabled",Value = false}):ToolTip("re-equip your weapon to disable")
             WeaponSection:Slider({Name = "Round Per Minute",Flag = "BRM5/RapidFire/Value",Min = 45,Max = 1000,Value = 1000})
         end
-        local CharSection = GameTab:Section({Name = "Character"}) do
-            CharSection:Toggle({Name = "Anti Fall",Flag = "BRM5/AntiFall",Value = false})
+        local CharSection = MiscTab:Section({Name = "Character"}) do
+            CharSection:Toggle({Name = "NoClip",Flag = "BRM5/NoClip",Value = false,
+            Callback = function(Bool)
+                if Bool and not NoClipEvent then
+                    NoClipEvent = RunService.Stepped:Connect(function()
+                        NoClip(true)
+                    end)
+                elseif not Bool and NoClipEvent then
+                    NoClipEvent:Disconnect() NoClipEvent = nil
+                    task.wait(0.1) NoClip(false)
+                end
+            end}):Keybind()
+            CharSection:Toggle({Name = "Anti Skydive",Flag = "BRM5/AntiFall",Value = false}):Keybind()
             CharSection:Toggle({Name = "No NVG Effect",Flag = "BRM5/DisableNVG",Value = false})
             CharSection:Toggle({Name = "No NVG Shape",Flag = "BRM5/NVGShape",Value = false})
             CharSection:Toggle({Name = "No Camera Bob",Flag = "BRM5/NoBob",Value = false})
             CharSection:Toggle({Name = "Speedhack",Flag = "BRM5/WalkSpeed/Enabled",Value = false}):Keybind()
             CharSection:Slider({Name = "Speed",Flag = "BRM5/WalkSpeed/Value",Min = 16,Max = 1000,Value = 120})
         end
-        local TPSection = GameTab:Section({Name = "Teleports"}) do
-            TPSection:Button({Name = "City Hall",Callback = function()
-                TeleportCharacter(AFKPlaces[1])
-            end})
-            TPSection:Button({Name = "Iraq",Callback = function()
-                TeleportCharacter(AFKPlaces[2])
-            end})
-            TPSection:Button({Name = "Mountain Outpost",Callback = function()
-                TeleportCharacter(AFKPlaces[3])
-            end})
-            TPSection:Button({Name = "Navalbase",Callback = function()
-                TeleportCharacter(AFKPlaces[4])
-            end})
-            TPSection:Button({Name = "Quary",Callback = function()
-                TeleportCharacter(AFKPlaces[5])
-            end})
-            TPSection:Button({Name = "Power Station",Callback = function()
-                TeleportCharacter(AFKPlaces[6])
-            end})
-            TPSection:Button({Name = "Stronghold",Callback = function()
-                TeleportCharacter(AFKPlaces[7])
-            end})
-            TPSection:Button({Name = "Vietnama Village",Callback = function()
-                TeleportCharacter(AFKPlaces[8])
-            end})
+        local TPSection = MiscTab:Section({Name = "Teleports"}) do
+            for Name,Value in pairs(Teleports) do
+                TPSection:Button({Name = Name,Callback = function()
+                    TeleportCharacter(Value)
+                end})
+            end
         end
-        local VehSection = GameTab:Section({Name = "Vehicle"}) do
+        local VehSection = MiscTab:Section({Name = "Vehicle"}) do
             VehSection:Toggle({Name = "Enabled",Flag = "BRM5/Vehicle/Enabled",Value = false})
             VehSection:Slider({Name = "Speed",Flag = "BRM5/Vehicle/Speed",Min = 0,Max = 1000,Value = 100})
             VehSection:Slider({Name = "Acceleration",Flag = "BRM5/Vehicle/Acceleration",Min = 1,Max = 50,Value = 1})
             :ToolTip("lower = faster")
         end
-        local HeliSection = GameTab:Section({Name = "Helicopter"}) do
+        local HeliSection = MiscTab:Section({Name = "Helicopter"}) do
             HeliSection:Toggle({Name = "Enabled",Flag = "BRM5/Helicopter/Enabled",Value = false})
             HeliSection:Slider({Name = "Speed",Flag = "BRM5/Helicopter/Speed",Min = 0,Max = 500,Value = 200})
         end
-        local AirSection = GameTab:Section({Name = "Aircraft"}) do
+        local AirSection = MiscTab:Section({Name = "Aircraft"}) do
             AirSection:Toggle({Name = "Enabled",Flag = "BRM5/Aircraft/Enabled",Value = false}):Keybind()
             AirSection:Slider({Name = "Speed",Flag = "BRM5/Aircraft/Speed",Min = 130,Max = 950,Value = 130})
             AirSection:Toggle({Name = "Enable Fly",Flag = "BRM5/Aircraft/FlyEnabled",Value = false}):Keybind()
@@ -328,7 +332,7 @@ local Window = Matr1x.Utilities.UI:Window({
                 CameraMod._handler._zoom = 128
             end})
         end
-        local MiscSection = GameTab:Section({Name = "Misc"}) do
+        local MiscSection = MiscTab:Section({Name = "Misc"}) do
             MiscSection:Button({Name = "Enable Fake RGE",Callback = function()
                 local serverSettings = getupvalue(require(ReplicatedStorage.Packages.server).Get,1)
                 if not serverSettings.CHEATS_ENABLED then
@@ -412,7 +416,6 @@ local Window = Matr1x.Utilities.UI:Window({
         local CreditsSection = SettingsTab:Section({Name = "Credits",Side = "Right"}) do
             CreditsSection:Label({Text = "This script was made by Matr1x#5430"})
             CreditsSection:Divider()
-            CreditsSection:Label({Text = "Thanks to Jan for awesome Background Patterns"})
             CreditsSection:Label({Text = "Thanks to Infinite Yield Team for Server Hop and Rejoin"})
             CreditsSection:Label({Text = "Thanks to Blissful for Offscreen Arrows"})
             CreditsSection:Label({Text = "Thanks to coasts for Universal ESP"})
@@ -421,17 +424,31 @@ local Window = Matr1x.Utilities.UI:Window({
     end
 end
 
+function NoClip(Enabled) if not LocalPlayer.Character then return end
+    for Index,Value in pairs(LocalPlayer.Character:GetDescendants()) do
+        if Value:IsA("BasePart") then Value.CanCollide = not Enabled end
+    end
+end
+
 Window:LoadDefaultConfig()
 Window:SetValue("UI/Toggle",
 Window.Flags["UI/OOL"])
 
 Matr1x.Utilities.Misc:SetupWatermark(Window)
---Matr1x.Utilities.Misc:SetupLighting(Window.Flags)
 Matr1x.Utilities.Drawing:SetupCursor(Window.Flags)
 
 Matr1x.Utilities.Drawing:FOVCircle("Aimbot",Window.Flags)
 Matr1x.Utilities.Drawing:FOVCircle("Trigger",Window.Flags)
 Matr1x.Utilities.Drawing:FOVCircle("SilentAim",Window.Flags)
+
+local RaycastParams = RaycastParams.new()
+RaycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+RaycastParams.IgnoreWater = true
+
+local function Raycast(Origin,Direction,Table)
+    RaycastParams.FilterDescendantsInstances = Table
+    return Workspace:Raycast(Origin,Direction,RaycastParams)
+end
 
 local function FixUnit(Vector)
 	if Vector.Magnitude == 0 then
@@ -458,13 +475,17 @@ local function TeamCheck(Enabled,Player)
     return LocalPlayer.Team ~= Player.Team
 end
 
+local function DistanceCheck(Enabled,Distance,MaxDistance)
+    if not Enabled then return true end
+    return Distance * 0.28 <= MaxDistance
+end
+
 local function WallCheck(Enabled,Hitbox,Character)
     if not Enabled then return true end
     local Camera = Workspace.CurrentCamera
-    return not Camera:GetPartsObscuringTarget({Hitbox.Position},{
-        LocalPlayer.Character,
-        Character
-    })[1]
+    return not Raycast(Camera.CFrame.Position,
+    Hitbox.Position - Camera.CFrame.Position,
+    {LocalPlayer.Character,Character})
 end
 
 local function GetHitbox(Config)
@@ -472,39 +493,43 @@ local function GetHitbox(Config)
     local Camera = Workspace.CurrentCamera
 
     local FieldOfView,ClosestHitbox = Config.DynamicFOV and
-    ((120 - Camera.FieldOfView) * 4) + Config.FieldOfView
-    or Config.FieldOfView,nil
+    ((120 - Camera.FieldOfView) * 4) + Config.FieldOfView or Config.FieldOfView
 
-    if Config.TargetMode == "NPC" then
-        for Index, NPC in pairs(NPCFolder:GetChildren()) do
+    if Config.NPCMode then
+        for Index,NPC in pairs(NPCFolder:GetChildren()) do
             local Humanoid = NPC:FindFirstChildOfClass("Humanoid")
             local IsAlive = Humanoid and Humanoid.Health > 0
             if not NPC:FindFirstChildWhichIsA("ProximityPrompt",true) and IsAlive then
-                for Index, HumanoidPart in pairs(Config.Priority) do
-                    local Hitbox = NPC:FindFirstChild(HumanoidPart)
-                    if Hitbox then
-                        local ScreenPosition, OnScreen = Camera:WorldToViewportPoint(Hitbox.Position)
+                for Index,BodyPart in pairs(Config.BodyParts) do
+                    local Hitbox = NPC:FindFirstChild(BodyPart) if not Hitbox then continue end
+                    local Distance = (Hitbox.Position - Camera.CFrame.Position).Magnitude
+
+                    if WallCheck(Config.WallCheck,Hitbox,NPC)
+                    and DistanceCheck(Config.DistanceCheck,Distance,Config.Distance) then
+                        local ScreenPosition,OnScreen = Camera:WorldToViewportPoint(Hitbox.Position)
                         local Magnitude = (Vector2.new(ScreenPosition.X, ScreenPosition.Y) - UserInputService:GetMouseLocation()).Magnitude
-                        if OnScreen and Magnitude < FieldOfView and WallCheck(Config.WallCheck,Hitbox,NPC) then
-                            FieldOfView,ClosestHitbox = Magnitude,Hitbox
+                        if OnScreen and Magnitude < FieldOfView then
+                            FieldOfView,ClosestHitbox = Magnitude,{NPC,NPC,Hitbox,Distance,ScreenPosition}
                         end
                     end
                 end
             end
         end
-    elseif Config.TargetMode == "Player" then
-        for Index, Player in pairs(PlayerService:GetPlayers()) do
-            local Character = Player.Character
-            local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
-            local IsAlive = Humanoid and Humanoid.Health > 0
-            if Player ~= LocalPlayer and IsAlive and TeamCheck(Config.TeamCheck,Player) then
-                for Index, HumanoidPart in pairs(Config.Priority) do
-                    local Hitbox = Character and Character:FindFirstChild(HumanoidPart)
-                    if Hitbox then
-                        local ScreenPosition, OnScreen = Camera:WorldToViewportPoint(Hitbox.Position)
+    else
+        for Index,Player in pairs(PlayerService:GetPlayers()) do
+            local Character = Player.Character if not Character then continue end
+            local Humanoid = Character:FindFirstChildOfClass("Humanoid") if not Humanoid then continue end
+            if Player ~= LocalPlayer and Humanoid.Health > 0 and TeamCheck(Config.TeamCheck,Player) then
+                for Index,BodyPart in pairs(Config.BodyParts) do
+                    local Hitbox = Character:FindFirstChild(BodyPart) if not Hitbox then continue end
+                    local Distance = (Hitbox.Position - Camera.CFrame.Position).Magnitude
+
+                    if WallCheck(Config.WallCheck,Hitbox,Character)
+                    and DistanceCheck(Config.DistanceCheck,Distance,Config.Distance) then
+                        local ScreenPosition,OnScreen = Camera:WorldToViewportPoint(Hitbox.Position)
                         local Magnitude = (Vector2.new(ScreenPosition.X, ScreenPosition.Y) - UserInputService:GetMouseLocation()).Magnitude
-                        if OnScreen and Magnitude < FieldOfView and WallCheck(Config.WallCheck,Hitbox,Character) then
-                            FieldOfView,ClosestHitbox = Magnitude,Hitbox
+                        if OnScreen and Magnitude < FieldOfView then
+                            FieldOfView,ClosestHitbox = Magnitude,{Player,Character,Hitbox,Distance,ScreenPosition}
                         end
                     end
                 end
@@ -520,44 +545,49 @@ local function GetHitboxWithPrediction(Config)
     local Camera = Workspace.CurrentCamera
 
     local FieldOfView,ClosestHitbox = Config.DynamicFOV and
-    ((120 - Camera.FieldOfView) * 4) + Config.FieldOfView
-    or Config.FieldOfView,nil
+    ((120 - Camera.FieldOfView) * 4) + Config.FieldOfView or Config.FieldOfView
     
-    if Config.TargetMode == "NPC" then
-        for Index, NPC in pairs(NPCFolder:GetChildren()) do
+    if Config.NPCMode then
+        for Index,NPC in pairs(NPCFolder:GetCharacter()) do
             local Humanoid = NPC:FindFirstChildOfClass("Humanoid")
             local IsAlive = Humanoid and Humanoid.Health > 0
             if not NPC:FindFirstChildWhichIsA("ProximityPrompt",true) and IsAlive then
-                for Index, HumanoidPart in pairs(Config.Priority) do
-                    local Hitbox = NPC:FindFirstChild(HumanoidPart)
-                    if Hitbox then
-                        local ScreenPosition, OnScreen = Camera:WorldToViewportPoint(Hitbox.Position)
+                for Index,BodyPart in pairs(Config.BodyParts) do
+                    local Hitbox = NPC:FindFirstChild(BodyPart) if not Hitbox then continue end
+                    local Distance = (Hitbox.Position - Camera.CFrame.Position).Magnitude
+
+                    if WallCheck(Config.WallCheck,Hitbox,NPC)
+                    and DistanceCheck(Config.DistanceCheck,Distance,Config.Distance) then
+                        local PredictionVelocity = (Hitbox.AssemblyLinearVelocity * Distance) / PredictedVelocity
+                        local ScreenPosition, OnScreen = Camera:WorldToViewportPoint(Config.Prediction
+                        and Hitbox.Position + PredictionVelocity or Hitbox.Position)
+    
                         local Magnitude = (Vector2.new(ScreenPosition.X, ScreenPosition.Y) - UserInputService:GetMouseLocation()).Magnitude
-                        if OnScreen and Magnitude < FieldOfView and WallCheck(Config.WallCheck,Hitbox,NPC) then
-                            FieldOfView,ClosestHitbox = Magnitude,Hitbox
+                        if OnScreen and Magnitude < FieldOfView then
+                            FieldOfView,ClosestHitbox = Magnitude,{NPC,NPC,Hitbox,Distance,ScreenPosition}
                         end
                     end
                 end
             end
         end
-    elseif Config.TargetMode == "Player" then
-        for Index, Player in pairs(PlayerService:GetPlayers()) do
-            local Character = Player.Character
-            local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
-            local IsAlive = Humanoid and Humanoid.Health > 0
-            if Player ~= LocalPlayer and IsAlive and TeamCheck(Config.TeamCheck,Player) then
-                for Index, HumanoidPart in pairs(Config.Priority) do
-                    local Hitbox = Character and Character:FindFirstChild(HumanoidPart)
-                    if Hitbox then
-                        local HitboxDistance = (Hitbox.Position - Camera.CFrame.Position).Magnitude
-                        local HitboxVelocityCorrection = (Hitbox.AssemblyLinearVelocity * HitboxDistance) / PredictedVelocity
+    else
+        for Index,Player in pairs(PlayerService:GetPlayers()) do
+            local Character = Player.Character if not Character then continue end
+            local Humanoid = Character:FindFirstChildOfClass("Humanoid") if not Humanoid then continue end
+            if Player ~= LocalPlayer and Humanoid.Health > 0 and TeamCheck(Config.TeamCheck,Player) then
+                for Index,BodyPart in pairs(Config.BodyParts) do
+                    local Hitbox = Character:FindFirstChild(BodyPart) if not Hitbox then continue end
+                    local Distance = (Hitbox.Position - Camera.CFrame.Position).Magnitude
 
+                    if WallCheck(Config.WallCheck,Hitbox,Character)
+                    and DistanceCheck(Config.DistanceCheck,Distance,Config.Distance) then
+                        local PredictionVelocity = (Hitbox.AssemblyLinearVelocity * Distance) / Config.Prediction.Velocity
                         local ScreenPosition, OnScreen = Camera:WorldToViewportPoint(Config.Prediction
-                        and Hitbox.Position + HitboxVelocityCorrection or Hitbox.Position)
-
+                        and Hitbox.Position + PredictionVelocity or Hitbox.Position)
+    
                         local Magnitude = (Vector2.new(ScreenPosition.X, ScreenPosition.Y) - UserInputService:GetMouseLocation()).Magnitude
-                        if OnScreen and Magnitude < FieldOfView and WallCheck(Config.WallCheck,Hitbox,Character) then
-                            FieldOfView,ClosestHitbox = Magnitude,Hitbox
+                        if OnScreen and Magnitude < FieldOfView then
+                            FieldOfView,ClosestHitbox = Magnitude,{Player,Character,Hitbox,Distance,ScreenPosition}
                         end
                     end
                 end
@@ -573,11 +603,10 @@ local function AimAt(Hitbox,Config)
     local Camera = Workspace.CurrentCamera
     local Mouse = UserInputService:GetMouseLocation()
 
-    local HitboxDistance = (Hitbox.Position - Camera.CFrame.Position).Magnitude
-    local HitboxVelocityCorrection = (Hitbox.AssemblyLinearVelocity * HitboxDistance) / PredictedVelocity
-
+    local PredictionVelocity = (Hitbox[3].AssemblyLinearVelocity * Hitbox[4]) / PredictedVelocity
     local HitboxOnScreen = Camera:WorldToViewportPoint(Config.Prediction
-    and Hitbox.Position + HitboxVelocityCorrection or Hitbox.Position)
+    and Hitbox[3].Position + PredictionVelocity or Hitbox[3].Position)
+
     mousemoverel(
         (HitboxOnScreen.X - Mouse.X) * Config.Sensitivity,
         (HitboxOnScreen.Y - Mouse.Y) * Config.Sensitivity
@@ -619,26 +648,71 @@ local function HookSignal(Signal,Index,Callback)
     end)
 end
 
-function TeleportCharacter(Target)
-    if not LocalPlayer.Character then return end
-    local HumanoidRootPart = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not HumanoidRootPart then return end
+local function Teleport(Position,Orientation,Velocity)
+	if not LocalPlayer.Character then return end
+	local PrimaryPart = LocalPlayer.Character.PrimaryPart
+	if not PrimaryPart then return end
+	
+	local AlignPosition = Instance.new("AlignPosition")
+	AlignPosition.Mode = Enum.PositionAlignmentMode.OneAttachment
+	AlignPosition.Attachment0 = PrimaryPart.RootRigAttachment
 
-    local OldValue = Window:GetValue("BRM5/AntiFall")
+    local AlignOrientation = Instance.new("AlignOrientation")
+	AlignOrientation.Mode = Enum.OrientationAlignmentMode.OneAttachment
+	AlignOrientation.Attachment0 = PrimaryPart.RootRigAttachment
+
+    --AlignPosition.MaxForce = 10000
+    AlignPosition.MaxVelocity = Velocity
+	AlignPosition.Position = Position
+
+	AlignPosition.Parent = PrimaryPart
+    AlignOrientation.Parent = PrimaryPart
+
+	local TPModule = {}
+	function TPModule:Update(Position,Velocity)
+        AlignPosition.MaxVelocity = Velocity
+		AlignPosition.Position = Position
+	end
+	function TPModule:Wait()
+		while task.wait() do
+			if (PrimaryPart.Position - AlignPosition.Position).Magnitude < 5 then
+				break
+			end
+		end
+	end
+	function TPModule:Destroy()
+		AlignPosition:Destroy()
+        AlignOrientation:Destroy()
+	end
+	
+	return TPModule
+end
+
+function TeleportCharacter(Position)
+    if not LocalPlayer.Character then return end
+    local PrimaryPart = LocalPlayer.Character.PrimaryPart
+    if not PrimaryPart then return end
+
+    local OldAF = Window:GetValue("BRM5/AntiFall")
+    local OldNC = Window:GetValue("BRM5/NoClip")
+
+    local ClientHandler = RequireModule("ClientHandler")
+    local Controller = ClientHandler._controller
     Window:SetValue("BRM5/AntiFall",true)
-    local Tween = TweenService:Create(HumanoidRootPart,TI2,{
-        CFrame = HumanoidRootPart.CFrame + Vector3.new(0,1000,0),
-        AssemblyLinearVelocity = Vector3.zero
-    }) Tween:Play() Tween.Completed:Wait()
-    local Tween = TweenService:Create(HumanoidRootPart,TI,{
-        CFrame = Target + Vector3.new(0,1000,0),
-        AssemblyLinearVelocity = Vector3.zero
-    }) Tween:Play() Tween.Completed:Wait()
-    local Tween = TweenService:Create(HumanoidRootPart,TI2,{
-        CFrame = Target,
-        AssemblyLinearVelocity = Vector3.zero
-    }) Tween:Play() Tween.Completed:Wait() task.wait(1)
-    Window:SetValue("BRM5/AntiFall",OldValue)
+    Window:SetValue("BRM5/NoClip",true)
+
+    LocalPlayer.Character.Humanoid.Sit = true
+    Network:FireServer("ReplicateSkydive",1) Network:FireServer("ReplicateSkydive",2)
+    local TP = Teleport(PrimaryPart.Position + Vector3.new(0,1000,0),
+    PrimaryPart.Orientation,500)
+
+    TP:Wait() TP:Update(Position + Vector3.new(0,1000,0),500) TP:Wait()
+    TP:Update(Position,250) TP:Wait() Controller:EndParachute() TP:Destroy()
+
+    Window:SetValue("BRM5/AntiFall",OldAF)
+    Window:SetValue("BRM5/NoClip",OldNC)
+
+    LocalPlayer.Character.Humanoid.Sit = false
 end
 function EnableSwitch(Switch)
     local CameraMod = RequireModule("CameraService")
@@ -767,9 +841,9 @@ HookSignal(RemoteEvent.OnClientEvent,1,function(Args)
         if Window.Flags["BRM5/NVGShape"] then
             Args[3] = ""
         end
-    elseif Args[1] == "InitInventory" then
+    --[[elseif Args[1] == "InitInventory" then
         if Window.Flags["BRM5/AntiFall"]
-        and Args[2] == true then return end
+        and Args[2] == true then return end]]
     end return Args
 end)
 
@@ -798,8 +872,8 @@ task.spawn(function()
             Table.FireServer = function(Self, ...) local Args = {...}
                 if checkcaller() then return OldFireServer(Self, ...) end
                 if Window.Flags["BRM5/AntiFall"] then
-                    if Args[1] == "ReplicateSkydive"
-                    and (Args[2] == 3 or Args[2] == 2) then
+                    if Args[1] == "ReplicateSkydive" and
+                    (Args[2] == 3 or Args[2] == 2) then
                         return
                     end
                 end
@@ -832,11 +906,11 @@ OldNamecall = hookmetamethod(game,"__namecall",function(Self, ...)
         if math.random(0,100) <= Window.Flags["SilentAim/HitChance"] then
             local Camera = Workspace.CurrentCamera
             if Args[1] == Camera.CFrame.Position then
-                Args[2] = SilentAim.Position - Camera.CFrame.Position
+                Args[2] = SilentAim[3].Position - Camera.CFrame.Position
             elseif AircraftTip and Args[1] == AircraftTip.WorldCFrame.Position then
-                Args[2] = SilentAim.Position - AircraftTip.WorldCFrame.Position
+                Args[2] = SilentAim[3].Position - AircraftTip.WorldCFrame.Position
             elseif GroundTip and Args[1] == GroundTip.WorldCFrame.Position then
-                Args[2] = SilentAim.Position - GroundTip.WorldCFrame.Position
+                Args[2] = SilentAim[3].Position - GroundTip.WorldCFrame.Position
             end
         end
     end
@@ -848,20 +922,24 @@ RunService.Heartbeat:Connect(function()
     SilentAim = GetHitbox({
         Enabled = Window.Flags["SilentAim/Enabled"],
         WallCheck = Window.Flags["SilentAim/WallCheck"],
+        DistanceCheck = Window.Flags["SilentAim/DistanceCheck"],
         DynamicFOV = Window.Flags["SilentAim/DynamicFOV"],
         FieldOfView = Window.Flags["SilentAim/FieldOfView"],
-        Priority = Window.Flags["SilentAim/Priority"],
-        TargetMode = Window.Flags["BRM5/TargetMode"][1],
+        Distance = Window.Flags["SilentAim/Distance"],
+        BodyParts = Window.Flags["SilentAim/BodyParts"],
+        NPCMode = Window.Flags["BRM5/NPCMode"],
         TeamCheck = Window.Flags["TeamCheck"]
     })
     if Aimbot then AimAt(
         GetHitbox({
             Enabled = Window.Flags["Aimbot/Enabled"],
             WallCheck = Window.Flags["Aimbot/WallCheck"],
+            DistanceCheck = Window.Flags["Aimbot/DistanceCheck"],
             DynamicFOV = Window.Flags["Aimbot/DynamicFOV"],
             FieldOfView = Window.Flags["Aimbot/FieldOfView"],
-            Priority = Window.Flags["Aimbot/Priority"],
-            TargetMode = Window.Flags["BRM5/TargetMode"][1],
+            Distance = Window.Flags["Aimbot/Distance"],
+            BodyParts = Window.Flags["Aimbot/BodyParts"],
+            NPCMode = Window.Flags["BRM5/NPCMode"],
             TeamCheck = Window.Flags["TeamCheck"]
         }),{
             Prediction = Window.Flags["Aimbot/Prediction"],
@@ -879,41 +957,39 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 Matr1x.Utilities.Misc:NewThreadLoop(0,function()
-    local Press = Window.Flags["BRM5/Aircraft/Trigger"] and mouse2press or mouse1press
-    local Release = Window.Flags["BRM5/Aircraft/Trigger"] and mouse2release or mouse1release
+    local Press = Window.Flags["Trigger/RMBMode"] and mouse2press or mouse1press
+    local Release = Window.Flags["Trigger/RMBMode"] and mouse2release or mouse1release
 
     if not Trigger then return end
-    local TriggerHB = GetHitboxWithPrediction({
+    local TriggerHitbox = GetHitboxWithPrediction({
         Enabled = Window.Flags["Trigger/Enabled"],
+        Prediction = Window.Flags["Trigger/Prediction"],
         WallCheck = Window.Flags["Trigger/WallCheck"],
-        Prediction = {
-            Enabled = Window.Flags["Trigger/Prediction/Enabled"],
-            Velocity = Window.Flags["Trigger/Prediction/Velocity"]
-        },
+        DistanceCheck = Window.Flags["Trigger/DistanceCheck"],
         DynamicFOV = Window.Flags["Trigger/DynamicFOV"],
         FieldOfView = Window.Flags["Trigger/FieldOfView"],
-        Priority = Window.Flags["Trigger/Priority"],
-        TargetMode = Window.Flags["BRM5/TargetMode"][1],
+        Distance = Window.Flags["Trigger/Distance"],
+        BodyParts = Window.Flags["Trigger/BodyParts"],
+        NPCMode = Window.Flags["BRM5/NPCMode"],
         TeamCheck = Window.Flags["TeamCheck"]
     })
 
-    if TriggerHB then Press()
+    if TriggerHitbox then Press()
         task.wait(Window.Flags["Trigger/Delay"])
         if Window.Flags["Trigger/HoldMode"] then
             while task.wait() do
-                TriggerHB = GetHitboxWithPrediction({
+                TriggerHitbox = GetHitboxWithPrediction({
                     Enabled = Window.Flags["Trigger/Enabled"],
+                    Prediction = Window.Flags["Trigger/Prediction"],
                     WallCheck = Window.Flags["Trigger/WallCheck"],
-                    Prediction = {
-                        Enabled = Window.Flags["Trigger/Prediction/Enabled"],
-                        Velocity = Window.Flags["Trigger/Prediction/Velocity"]
-                    },
+                    DistanceCheck = Window.Flags["Trigger/DistanceCheck"],
                     DynamicFOV = Window.Flags["Trigger/DynamicFOV"],
                     FieldOfView = Window.Flags["Trigger/FieldOfView"],
-                    Priority = Window.Flags["Trigger/Priority"],
-                    TargetMode = Window.Flags["BRM5/TargetMode"][1],
+                    Distance = Window.Flags["Trigger/Distance"],
+                    BodyParts = Window.Flags["Trigger/BodyParts"],
+                    NPCMode = Window.Flags["BRM5/NPCMode"],
                     TeamCheck = Window.Flags["TeamCheck"]
-                }) if not TriggerHB or not Trigger then break end
+                }) if not TriggerHitbox or not Trigger then break end
             end
         end Release()
     end
@@ -930,9 +1006,8 @@ NPCFolder.ChildRemoved:Connect(function(NPC)
 end)
 
 for Index,Player in pairs(PlayerService:GetPlayers()) do
-    if Player ~= LocalPlayer then
-        Matr1x.Utilities.Drawing:AddESP(Player,"Player","ESP/Player",Window.Flags)
-    end
+    if Player == LocalPlayer then continue end
+    Matr1x.Utilities.Drawing:AddESP(Player,"Player","ESP/Player",Window.Flags)
 end
 PlayerService.PlayerAdded:Connect(function(Player)
     Matr1x.Utilities.Drawing:AddESP(Player,"Player","ESP/Player",Window.Flags)
