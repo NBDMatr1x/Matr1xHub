@@ -22,7 +22,7 @@ end
 
 local function GetScript(Script)
     return Matr1x.Debug and readfile("Matr1x/" .. Script .. ".lua")
-    or game:HttpGetAsync("https://raw.githubusercontent.com/AlexR32/Matr1x/main/" .. Script .. ".lua")
+    or game:HttpGetAsync("https://raw.githubusercontent.com/NBDMatr1x/Matr1xHub/main/" .. Script .. ".lua")
 end
 
 local function LoadScript(Script)
