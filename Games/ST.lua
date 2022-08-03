@@ -1,30 +1,28 @@
 local UserInputService = game:GetService("UserInputService")
-local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 local PlayerService = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
-local Lighting = game:GetService("Lighting")
-local Stats = game:GetService("Stats")
 
 local LocalPlayer = PlayerService.LocalPlayer
-local Ping = Stats.Network.ServerStatsItem["Data Ping"]
-local Aimbot,SilentAim = false,nil
 
 local Window = Matr1x.Utilities.UI:Window({
     Name = "Matr1x Hub — "..Matr1x.Game,
-    Position = UDim2.new(0.05,0,0.5,-248),
-    Size = UDim2.new(0,496,0,496)
+    Position = UDim2.new(0.05,0,0.5,-173),
+    Size = UDim2.new(0,346,0,346)
     }) do Window:Watermark({Enabled = true})
 
     local VisualsTab = Window:Tab({Name = "Visuals"}) do
         local GlobalSection = VisualsTab:Section({Name = "Global",Side = "Left"}) do
-            GlobalSection:Colorpicker({Name = "Ally Color",Flag = "ESP/Player/Ally",Value = {0.33333334326744,0.75,1,0,false}})
-            GlobalSection:Colorpicker({Name = "Enemy Color",Flag = "ESP/Player/Enemy",Value = {1,0.75,1,0,false}})
-            GlobalSection:Toggle({Name = "Team Check",Flag = "ESP/Player/TeamCheck",Value = false})
+            GlobalSection:Colorpicker({Name = "Ally Color",Flag = "ESP/Player/Ally",Value = {0.3333333432674408,0.6666666269302368,1,0,false}})
+            GlobalSection:Colorpicker({Name = "Enemy Color",Flag = "ESP/Player/Enemy",Value = {1,0.6666666269302368,1,0,false}})
+            GlobalSection:Toggle({Name = "Team Check",Flag = "ESP/Player/TeamCheck",Value = true})
             GlobalSection:Toggle({Name = "Use Team Color",Flag = "ESP/Player/TeamColor",Value = false})
+            GlobalSection:Toggle({Name = "Distance Check",Flag = "ESP/Player/DistanceCheck",Value = false})
+            GlobalSection:Slider({Name = "Distance",Flag = "ESP/Player/Distance",Min = 25,Max = 1000,Value = 1000,Unit = "meters"})
         end
         local BoxSection = VisualsTab:Section({Name = "Boxes",Side = "Left"}) do
             BoxSection:Toggle({Name = "Box Enabled",Flag = "ESP/Player/Box/Enabled",Value = false})
+            BoxSection:Toggle({Name = "Healthbar",Flag = "ESP/Player/Box/Healthbar",Value = false})
             BoxSection:Toggle({Name = "Filled",Flag = "ESP/Player/Box/Filled",Value = false})
             BoxSection:Toggle({Name = "Outline",Flag = "ESP/Player/Box/Outline",Value = true})
             BoxSection:Slider({Name = "Thickness",Flag = "ESP/Player/Box/Thickness",Min = 1,Max = 10,Value = 1})
@@ -34,10 +32,10 @@ local Window = Matr1x.Utilities.UI:Window({
             BoxSection:Toggle({Name = "Outline",Flag = "ESP/Player/Text/Outline",Value = true})
             BoxSection:Toggle({Name = "Autoscale",Flag = "ESP/Player/Text/Autoscale",Value = true})
             BoxSection:Dropdown({Name = "Font",Flag = "ESP/Player/Text/Font",List = {
-                {Name = "UI",Mode = "Button"},
+                {Name = "UI",Mode = "Button",Value = true},
                 {Name = "System",Mode = "Button"},
                 {Name = "Plex",Mode = "Button"},
-                {Name = "Monospace",Mode = "Button",Value = true}
+                {Name = "Monospace",Mode = "Button"}
             }})
             BoxSection:Slider({Name = "Size",Flag = "ESP/Player/Text/Size",Min = 13,Max = 100,Value = 16})
             BoxSection:Slider({Name = "Transparency",Flag = "ESP/Player/Text/Transparency",Min = 0,Max = 1,Precise = 2,Value = 0})
@@ -45,6 +43,7 @@ local Window = Matr1x.Utilities.UI:Window({
         local OoVSection = VisualsTab:Section({Name = "Offscreen Arrows",Side = "Right"}) do
             OoVSection:Toggle({Name = "Enabled",Flag = "ESP/Player/Arrow/Enabled",Value = false})
             OoVSection:Toggle({Name = "Filled",Flag = "ESP/Player/Arrow/Filled",Value = true})
+            OoVSection:Toggle({Name = "Outline",Flag = "ESP/Player/Arrow/Outline",Value = true})
             OoVSection:Slider({Name = "Width",Flag = "ESP/Player/Arrow/Width",Min = 14,Max = 28,Value = 18})
             OoVSection:Slider({Name = "Height",Flag = "ESP/Player/Arrow/Height",Min = 14,Max = 28,Value = 28})
             OoVSection:Slider({Name = "Distance From Center",Flag = "ESP/Player/Arrow/Distance",Min = 80,Max = 200,Value = 200})
@@ -57,8 +56,8 @@ local Window = Matr1x.Utilities.UI:Window({
             HighlightSection:Colorpicker({Name = "Outline Color",Flag = "ESP/Player/Highlight/OutlineColor",Value = {1,1,0,0.5,false}})
         end
     end
-    local GameTab = Window:Tab({Name = "Miscellaneous"}) do
-        local FlySection = GameTab:Section({Name = "Fly",Side = "Right"}) do
+    local MiscTab = Window:Tab({Name = "Miscellaneous"}) do
+        local FlySection = MiscTab:Section({Name = "Fly"}) do
             FlySection:Toggle({Name = "Enabled",Flag = "ST/Fly/Enabled",Value = false})
             :Keybind({Flag = "ST/Fly/Keybind"})
             FlySection:Toggle({Name = "Attach To Camera",Flag = "ST/Fly/Camera",Value = true})
@@ -134,7 +133,6 @@ local Window = Matr1x.Utilities.UI:Window({
         local CreditsSection = SettingsTab:Section({Name = "Credits",Side = "Right"}) do
             CreditsSection:Label({Text = "This script was made by Matr1x#5430"})
             CreditsSection:Divider()
-            CreditsSection:Label({Text = "Thanks to Jan for awesome Background Patterns"})
             CreditsSection:Label({Text = "Thanks to Infinite Yield Team for Server Hop and Rejoin"})
             CreditsSection:Label({Text = "Thanks to Blissful for Offscreen Arrows"})
             CreditsSection:Label({Text = "Thanks to coasts for Universal ESP"})
@@ -148,7 +146,6 @@ Window:SetValue("UI/Toggle",
 Window.Flags["UI/OOL"])
 
 Matr1x.Utilities.Misc:SetupWatermark(Window)
---Matr1x.Utilities.Misc:SetupLighting(Window.Flags)
 Matr1x.Utilities.Drawing:SetupCursor(Window.Flags)
 
 local MaxVector = Vector3.new(math.huge,math.huge,math.huge)
@@ -226,10 +223,44 @@ RunService.Heartbeat:Connect(function()
     })
 end)
 
-for Index,Player in pairs(PlayerService:GetPlayers()) do
-    if Player ~= LocalPlayer then
-        Matr1x.Utilities.Drawing:AddESP(Player,"Player","ESP/Player",Window.Flags)
+--[[local function highlight(object, color, fill)
+    local highlight = Instance.new('Highlight', object)
+    highlight.FillColor = color
+    highlight.FillTransparency = fill
+    highlight.OutlineColor = color
+    highlight.OutlineTransparency = 0.98
+end
+
+local Ammo = Instance.new("Model", Workspace)
+highlight(Ammo, Color3.fromRGB(255, 0, 0), 0.7)
+local Fuel = Instance.new("Model", Workspace)
+highlight(Fuel, Color3.fromRGB(255, 255, 0), 0.9)
+local Barrel = Instance.new("Model", Workspace)
+highlight(Barrel, Color3.fromRGB(0, 0, 255), 0.7)
+
+local parts = {
+    ["Ammo rack"] = Ammo,
+    ["Fuel tank"] = Fuel,
+    ["Barrel"] = Barrel
+}
+
+for _,v in pairs(Workspace:GetDescendants()) do
+    if parts[v.Name] and ((GetPlayerTank(LocalPlayer) and not v:IsDescendantOf(GetPlayerTank(LocalPlayer))) or (not GetPlayerTank(LocalPlayer) and not v:IsDescendantOf(Workspace.Ignore))) then
+        v.Transparency = 0
+        v.Parent = parts[v.Name]
     end
+end
+
+Workspace.DescendantAdded:Connect(function(v) task.wait(5)
+    if parts[v.Name] and ((GetPlayerTank(LocalPlayer) and not v:IsDescendantOf(GetPlayerTank(LocalPlayer))) or (not GetPlayerTank(LocalPlayer) and not v:IsDescendantOf(Workspace.Ignore))) then
+        v.Transparency = 0
+        v.Parent = parts[v.Name]
+    end
+end)]]
+
+for Index,Player in pairs(PlayerService:GetPlayers()) do
+    if Player == LocalPlayer then continue end
+    Matr1x.Utilities.Drawing:AddESP(Player,"Player","ESP/Player",Window.Flags)
 end
 PlayerService.PlayerAdded:Connect(function(Player)
     Matr1x.Utilities.Drawing:AddESP(Player,"Player","ESP/Player",Window.Flags)
