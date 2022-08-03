@@ -116,28 +116,28 @@ local function ChooseTabSide(TabAsset,Mode)
 end
 
 local function GetConfigs()
-    if not isfolder("Matr1xHub") then makefolder("Matr1xHub") end
-    if not isfolder("Matr1xHub\\Configs") then makefolder("Matr1xHub\\Configs") end
-    if not isfile("Matr1xHub\\DefaultConfig.txt") then writefile("Matr1xHub\\DefaultConfig.txt","") end
+    if not isfolder("Matr1x") then makefolder("Matr1x") end
+    if not isfolder("Matr1x\\Configs") then makefolder("Matr1x\\Configs") end
+    if not isfile("Matr1x\\DefaultConfig.txt") then writefile("Matr1x\\DefaultConfig.txt","") end
 
     local Configs = {}
-    for Index,File in pairs(listfiles("Matr1xHub\\Configs") or {}) do
-        File = File:gsub("Matr1xHub\\Configs\\","")
+    for Index,File in pairs(listfiles("Matr1x\\Configs") or {}) do
+        File = File:gsub("Matr1x\\Configs\\","")
         File = File:gsub(".json","")
         Configs[Index] = File
     end
     return Configs
 end
 local function ConfigsToList()
-    if not isfolder("Matr1xHub") then makefolder("Matr1xHub") end
-    if not isfolder("Matr1xHub\\Configs") then makefolder("Matr1xHub\\Configs") end
-    if not isfile("Matr1xHub\\DefaultConfig.txt") then writefile("Matr1xHub\\DefaultConfig.txt","") end
+    if not isfolder("Matr1x") then makefolder("Matr1x") end
+    if not isfolder("Matr1x\\Configs") then makefolder("Matr1x\\Configs") end
+    if not isfile("Matr1x\\DefaultConfig.txt") then writefile("Matr1x\\DefaultConfig.txt","") end
     
     local Configs = {}
-    for Index,File in pairs(listfiles("Matr1xHub\\Configs") or {}) do
-        File = File:gsub("Matr1xHub\\Configs\\","")
+    for Index,File in pairs(listfiles("Matr1x\\Configs") or {}) do
+        File = File:gsub("Matr1x\\Configs\\","")
         File = File:gsub(".json","")
-        local DefaultConfig = readfile("Matr1xHub\\DefaultConfig.txt")
+        local DefaultConfig = readfile("Matr1x\\DefaultConfig.txt")
         Configs[Index] = {Name = File,Mode = "Button",
             Value = File == DefaultConfig}
     end
@@ -303,18 +303,18 @@ local function InitWindow(ScreenAsset,Window)
     function Window:SaveConfig(Name)
         local Config = {}
         if table.find(GetConfigs(),Name) then
-            Config = HttpService:JSONDecode(readfile("Matr1xHub\\Configs\\"..Name..".json"))
+            Config = HttpService:JSONDecode(readfile("Matr1x\\Configs\\"..Name..".json"))
         end
         for Index,Element in pairs(Window.Elements) do
             if not Element.IgnoreFlag then
                 Config[Element.Flag] = Window.Flags[Element.Flag]
             end
         end
-        writefile("Matr1xHub\\Configs\\"..Name..".json",HttpService:JSONEncode(Config))
+        writefile("Matr1x\\Configs\\"..Name..".json",HttpService:JSONEncode(Config))
     end
     function Window:LoadConfig(Name)
         if table.find(GetConfigs(),Name) then
-            local DecodedJSON = HttpService:JSONDecode(readfile("Matr1xHub\\Configs\\"..Name..".json"))
+            local DecodedJSON = HttpService:JSONDecode(readfile("Matr1x\\Configs\\"..Name..".json"))
             for Index,Element in pairs(Window.Elements) do
                 if DecodedJSON[Element.Flag] ~= nil then
                     Element:SetValue(DecodedJSON[Element.Flag])
@@ -324,25 +324,25 @@ local function InitWindow(ScreenAsset,Window)
     end
     function Window:DeleteConfig(Name)
         if table.find(GetConfigs(),Name) then
-            delfile("Matr1xHub\\Configs\\"..Name..".json")
+            delfile("Matr1x\\Configs\\"..Name..".json")
         end
     end
     function Window:GetDefaultConfig()
-        if not isfolder("Matr1xHub") then makefolder("Matr1xHub") end
-        if not isfolder("Matr1xHub\\Configs") then makefolder("Matr1xHub\\Configs") end
-        if not isfile("Matr1xHub\\DefaultConfig.txt") then writefile("Matr1xHub\\DefaultConfig.txt","") end
+        if not isfolder("Matr1x") then makefolder("Matr1x") end
+        if not isfolder("Matr1x\\Configs") then makefolder("Matr1x\\Configs") end
+        if not isfile("Matr1x\\DefaultConfig.txt") then writefile("Matr1x\\DefaultConfig.txt","") end
 
-        local DefaultConfig = readfile("Matr1xHub\\DefaultConfig.txt")
+        local DefaultConfig = readfile("Matr1x\\DefaultConfig.txt")
         if table.find(GetConfigs(),DefaultConfig) then
             return DefaultConfig
         end
     end
     function Window:LoadDefaultConfig()
-        if not isfolder("Matr1xHub") then makefolder("Matr1xHub") end
-        if not isfolder("Matr1xHub\\Configs") then makefolder("Matr1xHub\\Configs") end
-        if not isfile("Matr1xHub\\DefaultConfig.txt") then writefile("Matr1xHub\\DefaultConfig.txt","") end
+        if not isfolder("Matr1x") then makefolder("Matr1x") end
+        if not isfolder("Matr1x\\Configs") then makefolder("Matr1x\\Configs") end
+        if not isfile("Matr1x\\DefaultConfig.txt") then writefile("Matr1x\\DefaultConfig.txt","") end
 
-        local DefaultConfig = readfile("Matr1xHub\\DefaultConfig.txt")
+        local DefaultConfig = readfile("Matr1x\\DefaultConfig.txt")
         if table.find(GetConfigs(),DefaultConfig) then
             Window:LoadConfig(DefaultConfig)
         end
@@ -878,7 +878,8 @@ local function InitDropdown(Parent,ScreenAsset,Window,Dropdown)
         if not OptionContainerAsset.Visible and OptionContainerAsset.ListLayout.AbsoluteContentSize.Y ~= 0 then
             ContainerRender = RunService.RenderStepped:Connect(function()
                 if not OptionContainerAsset.Visible then ContainerRender:Disconnect() end
-                OptionContainerAsset.Position = UDim2.new(0,DropdownAsset.Background.AbsolutePosition.X,0,DropdownAsset.Background.AbsolutePosition.Y + 62)
+                OptionContainerAsset.Position = UDim2.new(0,DropdownAsset.Background.AbsolutePosition.X,0,
+                DropdownAsset.Background.AbsolutePosition.Y + DropdownAsset.Background.AbsoluteSize.Y + 42)
                 OptionContainerAsset.Size = UDim2.new(0,DropdownAsset.Background.AbsoluteSize.X,0,OptionContainerAsset.ListLayout.AbsoluteContentSize.Y + 2)
             end)
             OptionContainerAsset.Visible = true
@@ -890,10 +891,13 @@ local function InitDropdown(Parent,ScreenAsset,Window,Dropdown)
         end
     end)
     DropdownAsset.Title:GetPropertyChangedSignal("TextBounds"):Connect(function()
-        DropdownAsset.Size = UDim2.new(1,0,0,(DropdownAsset.Title.TextBounds.Y + 6) + (DropdownAsset.Background.Value.TextBounds.Y + 6))
+        DropdownAsset.Title.Size = UDim2.new(1,0,0,DropdownAsset.Title.TextBounds.Y + 6)
+        DropdownAsset.Background.Position = UDim2.new(0.5,0,0,DropdownAsset.Title.Size.Y.Offset)
+        DropdownAsset.Size = UDim2.new(1,0,0,DropdownAsset.Title.Size.Y.Offset + DropdownAsset.Background.Size.Y.Offset)
     end)
     DropdownAsset.Background.Value:GetPropertyChangedSignal("TextBounds"):Connect(function()
         DropdownAsset.Background.Size = UDim2.new(1,0,0,DropdownAsset.Background.Value.TextBounds.Y + 6)
+        DropdownAsset.Size = UDim2.new(1,0,0,DropdownAsset.Title.Size.Y.Offset + DropdownAsset.Background.Size.Y.Offset)
     end)
 
     local function SetOptionState(Option,Toggle)
@@ -934,7 +938,7 @@ local function InitDropdown(Parent,ScreenAsset,Window,Dropdown)
 
         Dropdown.Value = Selected
         if Option.Callback then
-            Option.Callback(Dropdown.Value)
+            Option.Callback(Dropdown.Value,Option)
         end
         Window.Flags[Dropdown.Flag] = Dropdown.Value
     end
@@ -1257,13 +1261,13 @@ function Bracket:Window(Window)
                 ConfigSection:Button({Name = "Set",Callback = function()
                     if ConfigDropdown.Value and ConfigDropdown.Value[1] then
                         DefaultConfig = ConfigDropdown.Value[1]
-                        writefile("Matr1xHub\\DefaultConfig.txt",DefaultConfig)
+                        writefile("Matr1x\\DefaultConfig.txt",DefaultConfig)
                         ConfigDivider:SetText(
                         "Default Config\n<font color=\"rgb(189,189,189)\">[ "..DefaultConfig.." ]</font>")
                     end
                 end})
                 ConfigSection:Button({Name = "Clear",Callback = function()
-                    writefile("Matr1xHub\\DefaultConfig.txt","")
+                    writefile("Matr1x\\DefaultConfig.txt","")
                     ConfigDivider:SetText("Default Config")
                 end})
             end
@@ -1510,7 +1514,7 @@ function Bracket:Notification(Notification)
     )
 
     if Notification.Duration then
-        coroutine.wrap(function()
+        task.spawn(function()
             for Time = Notification.Duration,1,-1 do
                 NotificationAsset.Title.Close.Text = Time
                 task.wait(1)
@@ -1521,7 +1525,7 @@ function Bracket:Notification(Notification)
                 Notification.Callback()
             end
             NotificationAsset:Destroy()
-        end)()
+        end)
     else
         NotificationAsset.Title.Close.MouseButton1Click:Connect(function()
             NotificationAsset:Destroy()
@@ -1532,6 +1536,7 @@ end
 function Bracket:Notification2(Notification)
     Notification = GetType(Notification,{},"table")
     Notification.Title = GetType(Notification.Title,"Title","string")
+    Notification.Duration = GetType(Notification.Duration,5,"number")
     Notification.Color = GetType(Notification.Color,Color3.new(1,0.5,0.25),"Color3")
 
     local NotificationAsset = GetAsset("Notification/NL")
@@ -1546,34 +1551,24 @@ function Bracket:Notification2(Notification)
         0,0,0,NotificationAsset.Main.Size.Y.Offset + 4
     )
 
-    NotificationAsset:TweenSize(
-        UDim2.new(
-            0,NotificationAsset.Main.Size.X.Offset + 4,
-            0,NotificationAsset.Main.Size.Y.Offset + 4
-        ),
-        Enum.EasingDirection.InOut,
-        Enum.EasingStyle.Linear,
-        0.25,
-        false,
-        coroutine.wrap(function()
-            task.wait(Notification.Duration or 5)
-            NotificationAsset:TweenSize(
-                UDim2.new(
-                    0,0,0,NotificationAsset.Main.Size.Y.Offset + 4
-                ),
-                Enum.EasingDirection.InOut,
-                Enum.EasingStyle.Linear,
-                0.25,
-                false,
-                function()
-                    if Notification.Callback then
-                        Notification.Callback()
-                    end
-                    NotificationAsset:Destroy()
-                end
-            )
+    local function TweenSize(X,Y,Callback)
+        NotificationAsset:TweenSize(
+            UDim2.new(0,X,0,Y),
+            Enum.EasingDirection.InOut,
+            Enum.EasingStyle.Linear,
+            0.25,false,Callback
+        )
+    end
+
+    TweenSize(NotificationAsset.Main.Size.X.Offset + 4,
+    NotificationAsset.Main.Size.Y.Offset + 4,function()
+        task.wait(Notification.Duration)TweenSize(0,
+        NotificationAsset.Main.Size.Y.Offset + 4,function()
+            if Notification.Callback then
+                Notification.Callback()
+            end NotificationAsset:Destroy()
         end)
-    )
+    end)
 end
 
 return Bracket
