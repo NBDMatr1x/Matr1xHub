@@ -11,7 +11,7 @@ local PlayerService = game:GetService("Players")
 local LocalPlayer = PlayerService.LocalPlayer
 
 local function GetSupportedGame() local Game
-    for Id, Info in pairs(Matr1x.Games) do
+    for Id,Info in pairs(Matr1x.Games) do
         if tostring(game.GameId) == Id then
             Game = Info break
         end
@@ -21,12 +21,12 @@ local function GetSupportedGame() local Game
 end
 
 local function GetScript(Script)
-    return Matr1x.Debug and readfile("Matr1xHub/" .. Script .. ".lua")
-    or game:HttpGetAsync("https://raw.githubusercontent.com/NBDMatr1x/Matr1xHub/main/" .. Script .. ".lua")
+    return Matr1x.Debug and readfile("Matr1x/" .. Script .. ".lua")
+    or game:HttpGetAsync("https://raw.githubusercontent.com/AlexR32/Matr1x/main/" .. Script .. ".lua")
 end
 
 local function LoadScript(Script)
-    return loadstring(Matr1x.Debug and readfile("Matr1xHub/" .. Script .. ".lua")
+    return loadstring(Matr1x.Debug and readfile("Matr1x/" .. Script .. ".lua")
     or game:HttpGetAsync("https://raw.githubusercontent.com/NBDMatr1x/Matr1xHub/main/" .. Script .. ".lua"))()
 end
 
