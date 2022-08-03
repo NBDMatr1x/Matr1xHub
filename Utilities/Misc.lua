@@ -33,6 +33,16 @@ local Ping = Stats.Network.ServerStatsItem["Data Ping"]
 local LocalPlayer = PlayerService.LocalPlayer
 local Request = syn and syn.request or request
 
+do local SetIdentity = syn and syn.set_thread_identity or setidentity
+local OldPluginManager,Message -- Thanks to Kiriot22
+task.spawn(function() SetIdentity(2)
+    local Success,Error = pcall(getrenv().PluginManager)
+    Message = Error
+end)
+OldPluginManager = hookfunction(getrenv().PluginManager, function()
+    return error(Message)
+end) end
+
 function Misc:SetupFPS()
     local StartTime,TimeTable,
     LastTime = os.clock(), {}
@@ -124,17 +134,18 @@ end
 
 function Misc:SetupLighting(Flags) local OldNewIndex
     Lighting.Changed:Connect(function(Property) --pcall(function()
-        local LightingProperty = Lighting[Property]
-        if type(LightingProperty) == "number" then
+        local FormatedProperty = gethiddenproperty(Lighting,Property)
+        local NormalProperty = gethiddenproperty(Lighting,Property)
+        if type(FormatedProperty) == "number" then
             if Property == "EnvironmentSpecularScale"
             or Property == "EnvironmentDiffuseScale" then
-                LightingProperty = tonumber(string.format("%.3f",LightingProperty))
-            else LightingProperty = tonumber(string.format("%.2f",LightingProperty)) end
+                FormatedProperty = tonumber(string.format("%.3f",FormatedProperty))
+            else FormatedProperty = tonumber(string.format("%.2f",FormatedProperty)) end
         end
         
-        if LightingProperty ~= Matr1x.Utilities.UI:TableToColor(Flags["Lighting/"..Property])
-        and Lighting[Property] ~= Misc.DefaultLighting[Property] then
-            Misc.DefaultLighting[Property] = Lighting[Property]
+        if FormatedProperty ~= Matr1x.Utilities.UI:TableToColor(Flags["Lighting/"..Property])
+        and NormalProperty ~= Misc.DefaultLighting[Property] then
+            Misc.DefaultLighting[Property] = NormalProperty
         end
     end) --end)
     
